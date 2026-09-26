@@ -56,8 +56,51 @@ export async function apiGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function getArticles() {
-  return apiGet<ApiArticle[]>("/api/articles");
+export type ApiStory = {
+  slug: string;
+  title: string;
+  summary: string;
+  eventDate: string;
+  category: string;
+  coverUrl: string | null;
+  coverAlt: string | null;
+};
+
+export function getStories() {
+  return apiGet<ApiStory[]>("/api/stories");
+}
+
+export type StoryBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "heading"; text: string }
+  | { type: "image"; mediaKey: string };
+
+export type ApiStoryDetail = {
+  slug: string;
+  title: string;
+  summary: string;
+  eventDate: string;
+  category: string;
+  body: StoryBlock[];
+  media: {
+    key: string;
+    type: string;
+    url: string | null;
+    caption: string | null;
+    altText: string | null;
+  }[];
+  sources: { title: string; url: string; publisher: string }[];
+};
+
+export function getStory(slug: string) {
+  return apiGet<ApiStoryDetail>(`/api/stories/${encodeURIComponent(slug)}`);
+}
+
+export function getArticles(category?: string) {
+  const path = category
+    ? `/api/articles?category=${encodeURIComponent(category)}`
+    : "/api/articles";
+  return apiGet<ApiArticle[]>(path);
 }
 
 export function getCategories() {
@@ -68,23 +111,3 @@ export function getArticleBySlug(slug: string) {
   return apiGet<ApiArticle>(`/api/articles/slug/${encodeURIComponent(slug)}`);
 }
 
-export async function createSubscriber(email: string) {
-  let response: Response;
-  try {
-    response = await fetch(`${API_URL}/api/subscribers`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-      cache: "no-store",
-    });
-  } catch {
-    throw new ApiError(`Can't reach the API at ${API_URL}`);
-  }
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      message?: string;
-    } | null;
-    throw new ApiError(body?.message ?? `API responded with ${response.status}`);
-  }
-}

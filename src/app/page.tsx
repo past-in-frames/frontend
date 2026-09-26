@@ -1,55 +1,55 @@
 import { HomePage } from "@/components/home-page";
-import {
-  ApiError,
-  getArticles,
-  getCategories,
-  type ApiArticle,
-} from "@/lib/api";
+import { ApiError, getStories, type ApiStory } from "@/lib/api";
+import { storyPath } from "@/lib/story-path";
 
 const fallbackGradient =
   "linear-gradient(135deg, var(--accent-2), var(--teal-mid))";
 
-function toCard(article: ApiArticle) {
+function categoryLabel(category: string) {
+  return category.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatEventDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function toCard(story: ApiStory) {
   return {
-    slug: article.slug,
-    category: article.category.name,
-    title: article.title,
-    meta: `${article.readTimeMin} min read`,
-    imageLabel: article.imageLabel ?? "IMAGE",
-    gradient: article.gradient ?? fallbackGradient,
-    href: `/article/${article.slug}`,
+    slug: story.slug,
+    category: categoryLabel(story.category),
+    title: story.title,
+    meta: formatEventDate(story.eventDate),
+    imageLabel: story.coverAlt ?? "IMAGE",
+    imageUrl: story.coverUrl,
+    gradient: fallbackGradient,
+    href: storyPath(story.category, story.slug),
   };
 }
 
 export default async function Home() {
   try {
-    const [articles, categories] = await Promise.all([
-      getArticles(),
-      getCategories(),
-    ]);
-    const featured = articles.filter((article) => article.featured);
-    const cards = (featured.length > 0 ? featured : articles).map(toCard);
-    const trending = articles
-      .filter((article) => article.trending)
-      .map((article, index) => ({
-        n: String(index + 1).padStart(2, "0"),
-        title: article.title,
-        category: article.category.name,
-        href: `/article/${article.slug}`,
-      }));
+    const stories = await getStories();
+    const cards = stories.map(toCard);
 
     return (
       <HomePage
-        categories={categories.map((category) => category.name)}
+        categories={[...new Set(cards.map((card) => card.category))]}
         articles={cards}
-        trending={trending}
+        trending={[]}
       />
     );
   } catch (error) {
     const message =
       error instanceof ApiError
         ? error.message
-        : "Couldn't load articles from the API";
+        : "Couldn't load stories from the API";
     return <HomePage categories={[]} articles={[]} trending={[]} error={message} />;
   }
 }

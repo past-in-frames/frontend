@@ -13,10 +13,10 @@ export function SiteFooter({ variant = "full" }: SiteFooterProps) {
           © 2026 Past In Frames. All rights reserved.
         </span>
         <div className="flex gap-[18px] lg:gap-6">
-          <Link href="#" className="text-[13px] text-muted">
+          <Link href="/privacy" className="text-[13px] text-muted">
             Privacy
           </Link>
-          <Link href="#" className="text-[13px] text-muted">
+          <Link href="/terms" className="text-[13px] text-muted">
             Terms
           </Link>
           <Link href="#" className="text-[13px] text-muted">
@@ -46,26 +46,17 @@ export function SiteFooter({ variant = "full" }: SiteFooterProps) {
         </div>
         <div className="flex gap-10 lg:gap-16">
           <FooterCol
-            title="Explore"
-            links={[
-              { href: "/#categories", label: "Categories" },
-              { href: "/article", label: "Trending" },
-              { href: "#", label: "Archive" },
-            ]}
-          />
-          <FooterCol
             title="Company"
             links={[
-              { href: "/#about", label: "About" },
+              { href: "/about", label: "About" },
               { href: "#", label: "Contact" },
-              { href: "#", label: "Careers", desktopOnly: true },
             ]}
           />
           <FooterCol
             title="Legal"
             links={[
-              { href: "#", label: "Privacy" },
-              { href: "#", label: "Terms" },
+              { href: "/privacy", label: "Privacy" },
+              { href: "/terms", label: "Terms" },
             ]}
             className="hidden lg:flex"
           />
@@ -97,7 +88,7 @@ function FooterCol({
   className = "",
 }: {
   title: string;
-  links: { href: string; label: string; desktopOnly?: boolean }[];
+  links: { href: string; label: string }[];
   className?: string;
 }) {
   return (
@@ -106,11 +97,7 @@ function FooterCol({
         {title}
       </span>
       {links.map((link) => (
-        <Link
-          key={link.label}
-          href={link.href}
-          className={`text-sm text-muted ${link.desktopOnly ? "hidden lg:block" : ""}`}
-        >
+        <Link key={link.label} href={link.href} className="text-sm text-muted">
           {link.label}
         </Link>
       ))}

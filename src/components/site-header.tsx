@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BackIcon, LogoMark, SearchIcon } from "@/components/icons";
-import { navItems } from "@/lib/content";
+import { categoryLinks, navItems } from "@/lib/content";
 
 type SiteHeaderProps = {
   variant?: "home" | "article";
@@ -14,11 +14,32 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMenuOpen(false);
     setSearchOpen(false);
+    setCategoriesOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!categoriesOpen) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!categoriesRef.current?.contains(event.target as Node)) {
+        setCategoriesOpen(false);
+      }
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setCategoriesOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [categoriesOpen]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";
@@ -27,10 +48,13 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
     };
   }, [menuOpen, searchOpen]);
 
-  const active =
-    pathname.startsWith("/article") || pathname === "/trending"
+  const active = pathname.startsWith("/category")
+    ? "categories"
+    : pathname.startsWith("/trending")
       ? "trending"
-      : "explore";
+      : pathname.startsWith("/about")
+        ? "about"
+        : "";
 
   return (
     <header className="sticky top-0 z-40 h-16 shrink-0 border-b border-ink/12 bg-cream px-[18px] lg:h-[84px] lg:px-16">
@@ -60,22 +84,47 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
           )}
 
           <nav className="hidden items-center gap-7 text-[15px] font-semibold lg:flex">
-            {navItems.map((item) => {
-              const isActive = item.id === active;
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`mi-navlink ${
-                    isActive
-                      ? "border-b-2 border-accent text-ink"
-                      : "text-muted"
-                  }`}
+            <div ref={categoriesRef} className="relative">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={categoriesOpen}
+                onClick={() => setCategoriesOpen((open) => !open)}
+                className={`mi-navlink inline-flex items-center gap-1.5 ${
+                  active === "categories" ? "border-b-2 border-accent text-ink" : "text-muted"
+                }`}
+              >
+                Categories
+                <Chevron open={categoriesOpen} />
+              </button>
+              {categoriesOpen && (
+                <div
+                  role="menu"
+                  className="absolute top-full left-1/2 z-50 mt-4 min-w-[168px] -translate-x-1/2 rounded-xl border border-ink/12 bg-cream py-1.5 shadow-[0_12px_24px_rgba(23,24,28,0.08)]"
                 >
-                  {item.label}
-                </Link>
-              );
-            })}
+                  {categoryLinks.map((item) => {
+                    const current = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.slug}
+                        href={item.href}
+                        role="menuitem"
+                        aria-current={current ? "page" : undefined}
+                        onClick={() => setCategoriesOpen(false)}
+                        className={`block px-4 py-2.5 text-sm ${
+                          current ? "text-ink" : "text-muted hover:text-ink"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            {navItems.map((item) => (
+              <NavLink key={item.id} item={item} active={active} />
+            ))}
           </nav>
         </div>
 
@@ -86,6 +135,7 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
             onClick={() => {
               setSearchOpen(true);
               setMenuOpen(false);
+              setCategoriesOpen(false);
             }}
             className={`flex size-[34px] items-center justify-center rounded-full border border-ink/16 bg-transparent lg:size-[38px] ${
               variant === "article" ? "hidden lg:flex" : ""
@@ -113,23 +163,34 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
       {menuOpen && (
         <div className="absolute inset-x-0 top-16 border-b border-ink/12 bg-cream px-[18px] py-6 shadow-[0_12px_24px_rgba(23,24,28,0.08)] lg:hidden">
           <nav className="flex flex-col gap-4 text-base font-semibold">
+            <div className="flex flex-col gap-3">
+              <span className={active === "categories" ? "text-ink" : "text-muted"}>
+                Categories
+              </span>
+              {categoryLinks.map((item) => {
+                const current = pathname === item.href;
+                return (
+                  <Link
+                    key={item.slug}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    aria-current={current ? "page" : undefined}
+                    className={`pl-3 ${current ? "text-ink" : "text-muted"}`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
             {navItems.map((item) => (
-              <Link
+              <NavLink
                 key={item.id}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                className={item.id === active ? "text-ink" : "text-muted"}
-              >
-                {item.label}
-              </Link>
+                item={item}
+                active={active}
+                menu
+                onNavigate={() => setMenuOpen(false)}
+              />
             ))}
-            <Link
-              href="/#newsletter"
-              onClick={() => setMenuOpen(false)}
-              className="mt-2 inline-flex h-11 items-center justify-center rounded-full bg-ink text-sm font-bold text-cream"
-            >
-              Subscribe
-            </Link>
           </nav>
         </div>
       )}
@@ -158,5 +219,56 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
         </div>
       )}
     </header>
+  );
+}
+
+function NavLink({
+  item,
+  active,
+  menu = false,
+  onNavigate,
+}: {
+  item: (typeof navItems)[number];
+  active: string;
+  menu?: boolean;
+  onNavigate?: () => void;
+}) {
+  const current = item.id === active;
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={current ? "page" : undefined}
+      className={
+        menu
+          ? current
+            ? "text-ink"
+            : "text-muted"
+          : `mi-navlink ${current ? "border-b-2 border-accent text-ink" : "text-muted"}`
+      }
+    >
+      {item.label}
+    </Link>
+  );
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      aria-hidden="true"
+      className={open ? "rotate-180" : undefined}
+    >
+      <path
+        d="M2 3.5 L5 6.5 L8 3.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

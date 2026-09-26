@@ -7,6 +7,7 @@ import {
   getArticles,
   type ApiArticle,
 } from "@/lib/api";
+import { storyPath } from "@/lib/story-path";
 
 const fallbackGradient =
   "linear-gradient(135deg, var(--accent-2), var(--teal-deep))";
@@ -45,7 +46,7 @@ function toView(article: ApiArticle, related: ApiArticle[]) {
     related: related.slice(0, 2).map((item) => ({
       title: item.title,
       gradient: item.gradient ?? fallbackGradient,
-      href: `/article/${item.slug}`,
+      href: storyPath(item.category.slug, item.slug),
     })),
   };
 }

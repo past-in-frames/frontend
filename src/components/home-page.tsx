@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MediaPlaceholder } from "@/components/media-placeholder";
-import { Newsletter } from "@/components/newsletter";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
@@ -13,6 +12,7 @@ export type HomeArticle = {
   title: string;
   meta: string;
   imageLabel: string;
+  imageUrl?: string | null;
   gradient: string;
   href: string;
 };
@@ -96,14 +96,9 @@ export function HomePage({
       </section>
 
       <section className="flex flex-col gap-[18px] px-[18px] pt-1 pb-8 lg:gap-6 lg:px-16 lg:pt-2 lg:pb-14">
-        <div className="flex items-baseline justify-between">
-          <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">
-            Fresh finds
-          </h2>
-          <Link href="#" className="mi-link text-[13px] font-semibold lg:text-sm">
-            View all →
-          </Link>
-        </div>
+        <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">
+          Fresh finds
+        </h2>
         <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3 lg:gap-7">
           {error ? (
             <p className="col-span-full text-sm text-faded">{error}</p>
@@ -118,12 +113,21 @@ export function HomePage({
                 href={article.href}
                 className="mi-card flex flex-col overflow-hidden rounded-2xl border border-ink/8 bg-white lg:gap-3.5"
               >
-                <MediaPlaceholder
-                  label={article.imageLabel}
-                  gradient={article.gradient}
-                  className="h-40 lg:h-[190px]"
-                  iconSize={26}
-                />
+                {article.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={article.imageUrl}
+                    alt={article.imageLabel}
+                    className="h-40 w-full object-cover lg:h-[190px]"
+                  />
+                ) : (
+                  <MediaPlaceholder
+                    label={article.imageLabel}
+                    gradient={article.gradient}
+                    className="h-40 lg:h-[190px]"
+                    iconSize={26}
+                  />
+                )}
                 <div className="flex flex-col gap-1.5 px-4 py-4 lg:gap-2 lg:px-[18px] lg:pt-0 lg:pb-5">
                   <span
                     className={`text-[11px] font-bold tracking-[0.06em] uppercase lg:text-xs lg:tracking-[0.08em] ${
@@ -147,42 +151,41 @@ export function HomePage({
         </div>
       </section>
 
-      <section
-        id="trending"
-        className="mx-[18px] mb-7 flex flex-col gap-4 rounded-[18px] bg-ink px-5 py-[26px] text-cream lg:mx-16 lg:mb-14 lg:gap-[22px] lg:rounded-[20px] lg:px-10 lg:py-10"
-      >
-        <h2 className="m-0 font-serif text-[19px] font-semibold lg:text-2xl">
-          Trending this week
-        </h2>
-        <div className="flex flex-col">
-          {trending.map((item, index) => {
-            const last = index === trending.length - 1;
-            return (
-              <Link
-                key={item.n}
-                href={item.href}
-                className={`flex items-start gap-3.5 py-3 lg:items-center lg:gap-6 lg:py-4 ${
-                  last
-                    ? ""
-                    : "border-b border-cream/12"
-                } ${item.n === "04" ? "hidden lg:flex" : ""}`}
-              >
-                <span className="w-[22px] shrink-0 font-serif text-[19px] text-accent lg:w-8 lg:text-2xl">
-                  {item.n}
-                </span>
-                <span className="flex-1 text-[15px] leading-[1.35] font-semibold lg:text-[17px] lg:leading-normal">
-                  {item.title}
-                </span>
-                <span className="hidden text-[13px] text-cream/55 lg:inline">
-                  {item.category}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {trending.length > 0 ? (
+        <section
+          id="trending"
+          className="mx-[18px] mb-7 flex flex-col gap-4 rounded-[18px] bg-ink px-5 py-[26px] text-cream lg:mx-16 lg:mb-14 lg:gap-[22px] lg:rounded-[20px] lg:px-10 lg:py-10"
+        >
+          <h2 className="m-0 font-serif text-[19px] font-semibold lg:text-2xl">
+            Trending this week
+          </h2>
+          <div className="flex flex-col">
+            {trending.map((item, index) => {
+              const last = index === trending.length - 1;
+              return (
+                <Link
+                  key={item.n}
+                  href={item.href}
+                  className={`flex items-start gap-3.5 py-3 lg:items-center lg:gap-6 lg:py-4 ${
+                    last ? "" : "border-b border-cream/12"
+                  } ${item.n === "04" ? "hidden lg:flex" : ""}`}
+                >
+                  <span className="w-[22px] shrink-0 font-serif text-[19px] text-accent lg:w-8 lg:text-2xl">
+                    {item.n}
+                  </span>
+                  <span className="flex-1 text-[15px] leading-[1.35] font-semibold lg:text-[17px] lg:leading-normal">
+                    {item.title}
+                  </span>
+                  <span className="hidden text-[13px] text-cream/55 lg:inline">
+                    {item.category}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
-      <Newsletter />
       <SiteFooter />
     </div>
   );
