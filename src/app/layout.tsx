@@ -44,6 +44,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${fraunces.variable} ${sourceSans.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4974891755070728"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-full bg-cream font-sans text-ink">{children}</body>
     </html>
   );
