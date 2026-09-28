@@ -1,10 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MediaPlaceholder } from "@/components/media-placeholder";
 import type { Story } from "@/lib/api";
 import { categoryLabel, categoryPath, formatEventDate } from "@/lib/story-path";
 
-const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--accent-2), var(--teal-deep))";
 const FIGURE_SIZES = "(min-width: 1024px) 780px, 100vw";
 
 export function StoryArticle({ story }: { story: Story }) {
@@ -60,22 +58,23 @@ export function StoryArticle({ story }: { story: Story }) {
 
             if (block.type === "image") {
               const media = mediaByKey.get(block.mediaKey);
+              // An image block whose file was never uploaded has nothing to show.
+              if (!media?.url) {
+                return null;
+              }
+
               return (
                 <figure key={index} className="my-6">
                   <div className="relative h-[220px] w-full overflow-hidden rounded-2xl lg:h-[440px] lg:rounded-[18px]">
-                    {media?.url ? (
-                      <Image
-                        src={media.url}
-                        alt={media.altText ?? ""}
-                        fill
-                        sizes={FIGURE_SIZES}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <MediaPlaceholder gradient={FALLBACK_GRADIENT} className="h-full" />
-                    )}
+                    <Image
+                      src={media.url}
+                      alt={media.altText ?? ""}
+                      fill
+                      sizes={FIGURE_SIZES}
+                      className="object-cover"
+                    />
                   </div>
-                  {media?.caption || media?.credit ? (
+                  {media.caption || media.credit ? (
                     <figcaption className="mt-2 text-[13px] text-faded">
                       {media.caption}
                       {media.caption && media.credit ? " · " : ""}
