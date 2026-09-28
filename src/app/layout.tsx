@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
+import Script from "next/script";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -51,7 +52,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           crossOrigin="anonymous"
         />
       </head>
-      <body className="min-h-full bg-cream font-sans text-ink">{children}</body>
+      <body className="min-h-full bg-cream font-sans text-ink">
+        {children}
+        {/* gtag.js appends its own tags to <head>, so it has to be injected
+            outside the tree React hydrates. */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-W3QTDWTHDG" />
+        <Script id="gtag-init">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-W3QTDWTHDG');`}
+        </Script>
+      </body>
     </html>
   );
 }
