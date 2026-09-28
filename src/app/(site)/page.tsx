@@ -16,13 +16,20 @@ const todayFormatter = new Intl.DateTimeFormat("en-US", {
 
 export default async function HomePage() {
   const [{ data: stories, error }, { data: categories }] = await Promise.all([
-    tryGet(() => getStories({ limit: HOME_STORY_LIMIT }), [] as StorySummary[]),
+    tryGet(
+      () => getStories({ limit: HOME_STORY_LIMIT, sort: "latest" }),
+      [] as StorySummary[],
+    ),
     tryGet(getCategories, [] as Category[]),
   ]);
 
+  // The top of the page is whatever was published most recently; below it the
+  // stories go back in time, which only reads as a timeline when sorted by year.
   const [lead, ...rest] = stories;
   const secondary = rest.slice(0, 2);
-  const timeline = rest.slice(2);
+  const timeline = rest
+    .slice(2)
+    .toSorted((a, b) => b.eventDate.localeCompare(a.eventDate));
 
   return (
     <PageShell>
@@ -56,7 +63,9 @@ export default async function HomePage() {
 
       {timeline.length > 0 ? (
         <section className="flex flex-col gap-3 lg:gap-5">
-          <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">Further back</h2>
+          <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">
+            More from this week
+          </h2>
           <StoryTimeline stories={timeline} />
         </section>
       ) : null}

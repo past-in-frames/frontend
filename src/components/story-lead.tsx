@@ -7,12 +7,20 @@ import { categoryLabel, eventYear, formatEventDate, storyPath } from "@/lib/stor
 const LEAD_SIZES = "(min-width: 1024px) 60vw, 100vw";
 const SECONDARY_SIZES = "(min-width: 1024px) 120px, 92px";
 
-/** Opens the home page: one story at roughly twice the weight of anything below it. */
+/**
+ * Opens the home page: one story at roughly twice the weight of anything below
+ * it. Without a cover the text takes the full width rather than leaving the
+ * image column empty.
+ */
 export function StoryLead({ story }: { story: StorySummary }) {
   return (
     <Link
       href={storyPath(story.category, story.slug)}
-      className="mi-card flex flex-col gap-4 lg:grid lg:grid-cols-[1.35fr_1fr] lg:items-center lg:gap-12"
+      className={`mi-card flex flex-col gap-4 ${
+        story.coverUrl
+          ? "lg:grid lg:grid-cols-[1.35fr_1fr] lg:items-center lg:gap-12"
+          : "lg:max-w-[820px] lg:gap-5"
+      }`}
     >
       {story.coverUrl ? (
         <div className="relative h-56 w-full overflow-hidden rounded-2xl lg:h-[420px] lg:rounded-[18px]">
