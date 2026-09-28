@@ -1,4 +1,4 @@
-const API_URL = process.env.API_URL ?? "http://localhost:3023";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3023";
 
 export type ApiCategory = {
   id: number;
