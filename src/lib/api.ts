@@ -88,6 +88,14 @@ export function getStories(category?: string) {
   return apiGet<StorySummary[]>(`/api/stories${query}`);
 }
 
+export function getStoriesByType(type: "science" | "history") {
+  return apiGet<StorySummary[]>(`/api/stories?type=${type}`);
+}
+
+export function searchStories(title: string) {
+  return apiGet<StorySummary[]>(`/api/stories?q=${encodeURIComponent(title)}`);
+}
+
 export function getCategories() {
   return apiGet<Category[]>("/api/stories/categories");
 }

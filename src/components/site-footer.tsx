@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { InstagramIcon, LogoMark, TwitterIcon } from "@/components/icons";
+import { FacebookIcon, LogoMark } from "@/components/icons";
 import { site } from "@/lib/site";
 
 const legalLinks = [
@@ -36,14 +36,15 @@ export function SiteFooter() {
         <span className="text-xs text-pale lg:text-[13px]">
           © {new Date().getFullYear()} {site.name}. All rights reserved.
         </span>
-        <div className="flex gap-2.5 lg:gap-3.5">
-          <span className="hidden size-[34px] items-center justify-center rounded-full border border-ink/14 lg:flex">
-            <TwitterIcon />
-          </span>
-          <span className="flex size-[30px] items-center justify-center rounded-full border border-ink/14 lg:size-[34px]">
-            <InstagramIcon size={13} />
-          </span>
-        </div>
+        <a
+          href="https://www.facebook.com/profile.php?id=61594799488023"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Past In Frames on Facebook"
+          className="flex size-[30px] items-center justify-center rounded-full border border-ink/14 lg:size-[34px]"
+        >
+          <FacebookIcon size={13} />
+        </a>
       </div>
     </footer>
   );
