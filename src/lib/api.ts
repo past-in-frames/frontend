@@ -1,62 +1,28 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3023";
+import "server-only";
 
-export type ApiCategory = {
-  id: number;
-  slug: string;
-  name: string;
+const API_URL = (process.env.API_URL ?? "http://localhost:3023").replace(/\/+$/, "");
+
+/**
+ * Published stories change a few times a day at most, so pages are rendered
+ * once and revalidated in the background instead of hitting the API per visit.
+ */
+const REVALIDATE_SECONDS = 300;
+
+export type StoryBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "heading"; text: string }
+  | { type: "image"; mediaKey: string };
+
+export type StoryMedia = {
+  key: string;
+  type: string;
+  url: string | null;
+  caption: string | null;
+  altText: string | null;
+  credit: string | null;
 };
 
-export type ApiArticle = {
-  id: number;
-  slug: string;
-  title: string;
-  dek: string;
-  body: string;
-  imageLabel: string | null;
-  gradient: string | null;
-  readTimeMin: number;
-  featured: boolean;
-  trending: boolean;
-  publishedAt: string | null;
-  category: ApiCategory;
-  author: { id: number; name: string };
-  tags: { id: number; name: string }[];
-};
-
-export class ApiError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
-
-export function apiOrigin() {
-  return API_URL;
-}
-
-export async function apiGet<T>(path: string): Promise<T> {
-  let response: Response;
-  try {
-    response = await fetch(`${API_URL}${path}`, { cache: "no-store" });
-  } catch {
-    throw new ApiError(`Can't reach the API at ${API_URL}`);
-  }
-
-  if (response.status === 404) {
-    throw new ApiError("Not found");
-  }
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      message?: string;
-    } | null;
-    throw new ApiError(body?.message ?? `API responded with ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
-}
-
-export type ApiStory = {
+export type StorySummary = {
   slug: string;
   title: string;
   summary: string;
@@ -66,48 +32,76 @@ export type ApiStory = {
   coverAlt: string | null;
 };
 
-export function getStories() {
-  return apiGet<ApiStory[]>("/api/stories");
-}
-
-export type StoryBlock =
-  | { type: "paragraph"; text: string }
-  | { type: "heading"; text: string }
-  | { type: "image"; mediaKey: string };
-
-export type ApiStoryDetail = {
+export type Story = {
   slug: string;
   title: string;
   summary: string;
   eventDate: string;
+  publishedAt: string | null;
+  updatedAt: string;
   category: string;
   body: StoryBlock[];
-  media: {
-    key: string;
-    type: string;
-    url: string | null;
-    caption: string | null;
-    altText: string | null;
-  }[];
+  media: StoryMedia[];
   sources: { title: string; url: string; publisher: string }[];
 };
 
-export function getStory(slug: string) {
-  return apiGet<ApiStoryDetail>(`/api/stories/${encodeURIComponent(slug)}`);
+export type Category = { name: string; count: number };
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+
+  get isNotFound() {
+    return this.status === 404;
+  }
 }
 
-export function getArticles(category?: string) {
-  const path = category
-    ? `/api/articles?category=${encodeURIComponent(category)}`
-    : "/api/articles";
-  return apiGet<ApiArticle[]>(path);
+export function apiOrigin() {
+  return API_URL;
+}
+
+async function apiGet<T>(path: string): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+  } catch {
+    throw new ApiError("Can't reach the API", 503);
+  }
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new ApiError(body?.message ?? `API responded with ${response.status}`, response.status);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export function getStories(category?: string) {
+  const query = category ? `?category=${encodeURIComponent(category)}` : "";
+  return apiGet<StorySummary[]>(`/api/stories${query}`);
 }
 
 export function getCategories() {
-  return apiGet<ApiCategory[]>("/api/categories");
+  return apiGet<Category[]>("/api/stories/categories");
 }
 
-export function getArticleBySlug(slug: string) {
-  return apiGet<ApiArticle>(`/api/articles/slug/${encodeURIComponent(slug)}`);
+export function getStory(slug: string) {
+  return apiGet<Story>(`/api/stories/${encodeURIComponent(slug)}`);
 }
 
+/** Returns an empty result instead of throwing, for pages that must still render. */
+export async function tryGet<T>(load: () => Promise<T>, fallback: T) {
+  try {
+    return { data: await load(), error: undefined as string | undefined };
+  } catch (error) {
+    const message = error instanceof ApiError ? error.message : "Couldn't load stories";
+    return { data: fallback, error: message };
+  }
+}

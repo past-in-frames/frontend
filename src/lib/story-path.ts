@@ -1,3 +1,4 @@
+/** Categories are free text in the database, so URLs use a slugified form. */
 export function categorySlug(category: string) {
   return category
     .trim()
@@ -6,6 +7,34 @@ export function categorySlug(category: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function categoryPath(category: string) {
+  return `/category/${categorySlug(category)}`;
+}
+
 export function storyPath(category: string, slug: string) {
-  return `/category/${categorySlug(category)}/${slug}`;
+  return `${categoryPath(category)}/${slug}`;
+}
+
+export function categoryLabel(category: string) {
+  return category.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+export function labelFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function formatEventDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
 }

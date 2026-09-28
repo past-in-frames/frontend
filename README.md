@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Past In Frames — site
 
-## Getting Started
+Next.js App Router front end. Readers arrive from social links to read a single
+story, so every public page is prerendered and revalidated in the background
+rather than rendered per request.
 
-First, run the development server:
+## Running locally
+
+The site reads from the API, so start the backend (and its database tunnel)
+first — see `../backend/README.md`.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
+npm install
+npm run dev   # http://localhost:3022
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variable               | Purpose                                                  |
+| ---------------------- | -------------------------------------------------------- |
+| `API_URL`              | Backend origin. Server-side only; the browser never sees it |
+| `NEXT_PUBLIC_SITE_URL` | Public origin used for canonical URLs, sitemap and social cards |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app/(site)/` — reader-facing pages. The group layout renders the header
+  and footer once and loads the category list for the navigation.
+- `src/app/admin/` — the editor. Outside the `(site)` group so it never gets the
+  public chrome, and excluded from indexing.
+- `src/app/api/admin/` — thin proxies that attach the session cookie to API
+  calls, so the token stays httpOnly and never reaches client JavaScript.
+- `src/lib/api.ts` — the only place that talks to the backend. Marked
+  `server-only`.
 
-## Learn More
+## URLs
 
-To learn more about Next.js, take a look at the following resources:
+A story lives at `/category/<category>/<slug>`. Categories are free text in the
+database and slugified for the URL, so reaching a story through the wrong
+category returns 404 and each story keeps one canonical address.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Publishing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Only stories with status `published` appear on the site, in the sitemap and in
+the navigation. Drafts are visible in the admin dashboard only.

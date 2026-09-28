@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { apiOrigin } from "@/lib/api";
+import { notFound } from "next/navigation";
+import { loadAdmin } from "@/lib/admin-proxy";
 import { StoryForm } from "../../story-form";
 import type { StoryInput } from "../../story-types";
 
@@ -17,40 +16,13 @@ export default async function EditStoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const token = (await cookies()).get("admin_session")?.value;
-  if (!token) {
-    redirect("/admin");
-  }
+  const result = await loadAdmin<StoryInput>(
+    `/api/admin/stories/${encodeURIComponent(slug)}`,
+  );
 
-  let response: Response | null = null;
-  try {
-    response = await fetch(`${apiOrigin()}/api/admin/stories/${encodeURIComponent(slug)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    });
-  } catch {
-    return (
-      <main className="min-h-screen px-[18px] py-8 lg:px-16 lg:py-12">
-        <p className="m-0 text-sm text-rust">Couldn&apos;t load this story</p>
-      </main>
-    );
-  }
-
-  if (response.status === 401) {
-    redirect("/admin");
-  }
-  if (response.status === 404) {
+  if (!result.ok && result.status === 404) {
     notFound();
   }
-  if (!response.ok) {
-    return (
-      <main className="min-h-screen px-[18px] py-8 lg:px-16 lg:py-12">
-        <p className="m-0 text-sm text-rust">Couldn&apos;t load this story</p>
-      </main>
-    );
-  }
-
-  const story = (await response.json()) as StoryInput;
 
   return (
     <main className="min-h-screen px-[18px] py-8 lg:px-16 lg:py-12">
@@ -62,7 +34,11 @@ export default async function EditStoryPage({
           Back
         </Link>
       </div>
-      <StoryForm mode="edit" initial={story} originalSlug={slug} />
+      {result.ok ? (
+        <StoryForm mode="edit" initial={result.data} originalSlug={slug} />
+      ) : (
+        <p className="m-0 text-sm text-rust">{result.error}</p>
+      )}
     </main>
   );
 }

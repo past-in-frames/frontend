@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { ContentPage } from "@/components/content-page";
+import { PageHeader, PageShell } from "@/components/page-header";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Past In Frames",
+  title: "Privacy Policy",
   description: "Privacy Policy for Past In Frames.",
 };
 
 export default function PrivacyPage() {
   return (
-    <ContentPage title="Privacy Policy">
+    <PageShell>
+      <PageHeader title="Privacy Policy" />
       <div className="flex max-w-[640px] flex-col gap-8 text-[15px] leading-[1.7] text-body lg:text-[18px] lg:leading-[1.75]">
         <p className="m-0">
           <span className="font-semibold">Effective date:</span> September 25, 2026
@@ -88,6 +89,6 @@ export default function PrivacyPage() {
           </p>
         </section>
       </div>
-    </ContentPage>
+    </PageShell>
   );
 }

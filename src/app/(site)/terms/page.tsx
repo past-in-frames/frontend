@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { ContentPage } from "@/components/content-page";
+import { PageHeader, PageShell } from "@/components/page-header";
 
 export const metadata: Metadata = {
-  title: "Terms of Use — Past In Frames",
+  title: "Terms of Use",
   description: "Terms of Use for Past In Frames.",
 };
 
 export default function TermsPage() {
   return (
-    <ContentPage title="Terms of Use">
+    <PageShell>
+      <PageHeader title="Terms of Use" />
       <div className="flex max-w-[640px] flex-col gap-8 text-[15px] leading-[1.7] text-body lg:text-[18px] lg:leading-[1.75]">
         <p className="m-0">
           <span className="font-semibold">Effective date:</span> September 25, 2026
@@ -77,6 +78,6 @@ export default function TermsPage() {
           </p>
         </section>
       </div>
-    </ContentPage>
+    </PageShell>
   );
 }

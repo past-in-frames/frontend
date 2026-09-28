@@ -25,8 +25,6 @@ export function StoryForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTarget = useRef<UploadTarget>("new");
   const [story, setStory] = useState(initial);
-  const storyRef = useRef(story);
-  storyRef.current = story;
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -107,7 +105,6 @@ export function StoryForm({
     if (!file || uploading) return;
 
     const target = uploadTarget.current;
-    const current = storyRef.current;
     setUploading(true);
     setError("");
     try {
@@ -115,7 +112,7 @@ export function StoryForm({
       body.append("file", file, file.name);
       if (mode === "edit" && originalSlug) {
         body.append("slug", originalSlug);
-        const mediaKey = targetMediaKey(current, target);
+        const mediaKey = targetMediaKey(story, target);
         if (mediaKey) body.append("mediaKey", mediaKey);
       }
       const response = await fetch("/api/admin/uploads", { method: "POST", body });

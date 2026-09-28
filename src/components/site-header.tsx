@@ -3,28 +3,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { BackIcon, LogoMark, SearchIcon } from "@/components/icons";
-import { categoryLinks, navItems } from "@/lib/content";
+import { BackIcon, LogoMark } from "@/components/icons";
+import { categoryLabel, categoryPath } from "@/lib/story-path";
 
-type SiteHeaderProps = {
-  variant?: "home" | "article";
-};
-
-export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
+export function SiteHeader({ categories }: { categories: string[] }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [openedAt, setOpenedAt] = useState(pathname);
   const categoriesRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // Navigating away closes whatever was open, without waiting for an effect.
+  if (openedAt !== pathname) {
+    setOpenedAt(pathname);
     setMenuOpen(false);
-    setSearchOpen(false);
     setCategoriesOpen(false);
-  }, [pathname]);
+  }
+
+  // A story page is /category/<category>/<slug>; the mobile header shows "Back" there.
+  const isStory = pathname.split("/").filter(Boolean).length === 3;
+  const active = pathname.startsWith("/category")
+    ? "categories"
+    : pathname.startsWith("/about")
+      ? "about"
+      : "";
 
   useEffect(() => {
     if (!categoriesOpen) return;
+
     function onPointerDown(event: MouseEvent) {
       if (!categoriesRef.current?.contains(event.target as Node)) {
         setCategoriesOpen(false);
@@ -33,6 +39,7 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setCategoriesOpen(false);
     }
+
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
@@ -42,19 +49,11 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
   }, [categoriesOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";
+    document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [menuOpen, searchOpen]);
-
-  const active = pathname.startsWith("/category")
-    ? "categories"
-    : pathname.startsWith("/trending")
-      ? "trending"
-      : pathname.startsWith("/about")
-        ? "about"
-        : "";
+  }, [menuOpen]);
 
   return (
     <header className="sticky top-0 z-40 h-16 shrink-0 border-b border-ink/12 bg-cream px-[18px] lg:h-[84px] lg:px-16">
@@ -71,7 +70,7 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
             </span>
           </Link>
 
-          {variant === "article" ? (
+          {isStory ? (
             <Link href="/" className="flex items-center gap-2.5 lg:hidden">
               <BackIcon />
               <span className="text-sm font-semibold text-muted">Back</span>
@@ -79,176 +78,101 @@ export function SiteHeader({ variant = "home" }: SiteHeaderProps) {
           ) : (
             <Link href="/" className="flex items-center gap-2 lg:hidden">
               <LogoMark size={32} />
-              <span className="font-serif text-base font-semibold">Past In Frames</span>
+              <span className="font-serif text-[17px] font-semibold">
+                Past In Frames
+              </span>
             </Link>
           )}
 
           <nav className="hidden items-center gap-7 text-[15px] font-semibold lg:flex">
-            <div ref={categoriesRef} className="relative">
-              <button
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded={categoriesOpen}
-                onClick={() => setCategoriesOpen((open) => !open)}
-                className={`mi-navlink inline-flex items-center gap-1.5 ${
-                  active === "categories" ? "border-b-2 border-accent text-ink" : "text-muted"
-                }`}
-              >
-                Categories
-                <Chevron open={categoriesOpen} />
-              </button>
-              {categoriesOpen && (
-                <div
-                  role="menu"
-                  className="absolute top-full left-1/2 z-50 mt-4 min-w-[168px] -translate-x-1/2 rounded-xl border border-ink/12 bg-cream py-1.5 shadow-[0_12px_24px_rgba(23,24,28,0.08)]"
+            {categories.length > 0 ? (
+              <div ref={categoriesRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCategoriesOpen((open) => !open)}
+                  aria-expanded={categoriesOpen}
+                  className={`mi-navlink flex items-center gap-1.5 ${
+                    active === "categories"
+                      ? "border-b-2 border-accent text-ink"
+                      : "text-muted"
+                  }`}
                 >
-                  {categoryLinks.map((item) => {
-                    const current = pathname === item.href;
-                    return (
+                  Categories
+                  <Chevron open={categoriesOpen} />
+                </button>
+                {categoriesOpen ? (
+                  <div className="absolute top-full left-0 mt-3 flex min-w-[200px] flex-col rounded-[10px] border border-ink/12 bg-cream py-2 shadow-[0_12px_24px_rgba(23,24,28,0.08)]">
+                    {categories.map((category) => (
                       <Link
-                        key={item.slug}
-                        href={item.href}
-                        role="menuitem"
-                        aria-current={current ? "page" : undefined}
-                        onClick={() => setCategoriesOpen(false)}
-                        className={`block px-4 py-2.5 text-sm ${
-                          current ? "text-ink" : "text-muted hover:text-ink"
-                        }`}
+                        key={category}
+                        href={categoryPath(category)}
+                        className="px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
                       >
-                        {item.label}
+                        {categoryLabel(category)}
                       </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            {navItems.map((item) => (
-              <NavLink key={item.id} item={item} active={active} />
-            ))}
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            <Link
+              href="/about"
+              aria-current={active === "about" ? "page" : undefined}
+              className={`mi-navlink ${
+                active === "about" ? "border-b-2 border-accent text-ink" : "text-muted"
+              }`}
+            >
+              About
+            </Link>
           </nav>
         </div>
 
-        <div className="flex items-center gap-3.5 lg:gap-4">
-          <button
-            type="button"
-            aria-label="Search"
-            onClick={() => {
-              setSearchOpen(true);
-              setMenuOpen(false);
-              setCategoriesOpen(false);
-            }}
-            className={`flex size-[34px] items-center justify-center rounded-full border border-ink/16 bg-transparent lg:size-[38px] ${
-              variant === "article" ? "hidden lg:flex" : ""
-            }`}
-          >
-            <SearchIcon size={variant === "article" ? 17 : 15} />
-          </button>
-          <button
-            type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            onClick={() => {
-              setMenuOpen((open) => !open);
-              setSearchOpen(false);
-            }}
-            className="flex size-[34px] flex-col items-center justify-center gap-1 rounded-lg bg-ink lg:hidden"
-          >
-            <span className="h-0.5 w-4 rounded-sm bg-cream" />
-            <span className="h-0.5 w-4 rounded-sm bg-cream" />
-            <span className="h-0.5 w-4 rounded-sm bg-cream" />
-          </button>
-        </div>
+        <button
+          type="button"
+          aria-label="Open menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+          className="flex size-9 flex-col items-center justify-center gap-1 rounded-full bg-ink lg:hidden"
+        >
+          <span className="h-0.5 w-4 rounded-sm bg-cream" />
+          <span className="h-0.5 w-4 rounded-sm bg-cream" />
+          <span className="h-0.5 w-4 rounded-sm bg-cream" />
+        </button>
       </div>
 
-      {menuOpen && (
+      {menuOpen ? (
         <div className="absolute inset-x-0 top-16 border-b border-ink/12 bg-cream px-[18px] py-6 shadow-[0_12px_24px_rgba(23,24,28,0.08)] lg:hidden">
           <nav className="flex flex-col gap-4 text-base font-semibold">
-            <div className="flex flex-col gap-3">
-              <span className={active === "categories" ? "text-ink" : "text-muted"}>
-                Categories
-              </span>
-              {categoryLinks.map((item) => {
-                const current = pathname === item.href;
-                return (
-                  <Link
-                    key={item.slug}
-                    href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    aria-current={current ? "page" : undefined}
-                    className={`pl-3 ${current ? "text-ink" : "text-muted"}`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-            {navItems.map((item) => (
-              <NavLink
-                key={item.id}
-                item={item}
-                active={active}
-                menu
-                onNavigate={() => setMenuOpen(false)}
-              />
-            ))}
+            {categories.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                <span className="text-muted">Categories</span>
+                {categories.map((category) => {
+                  const href = categoryPath(category);
+                  const current = pathname === href;
+                  return (
+                    <Link
+                      key={category}
+                      href={href}
+                      aria-current={current ? "page" : undefined}
+                      className={`pl-3 ${current ? "text-ink" : "text-muted"}`}
+                    >
+                      {categoryLabel(category)}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+            <Link
+              href="/about"
+              aria-current={active === "about" ? "page" : undefined}
+              className={active === "about" ? "text-ink" : "text-muted"}
+            >
+              About
+            </Link>
           </nav>
         </div>
-      )}
-
-      {searchOpen && (
-        <div className="absolute inset-x-0 top-16 border-b border-ink/12 bg-cream px-[18px] py-5 shadow-[0_12px_24px_rgba(23,24,28,0.08)] lg:px-16">
-          <form
-            className="flex gap-2.5"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <input
-              autoFocus
-              type="search"
-              placeholder="Search curiosities"
-              aria-label="Search curiosities"
-              className="h-11 flex-1 rounded-[10px] border border-ink/20 bg-white px-4 font-sans text-[15px] outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setSearchOpen(false)}
-              className="h-11 rounded-[10px] px-4 text-sm font-semibold text-muted"
-            >
-              Close
-            </button>
-          </form>
-        </div>
-      )}
+      ) : null}
     </header>
-  );
-}
-
-function NavLink({
-  item,
-  active,
-  menu = false,
-  onNavigate,
-}: {
-  item: (typeof navItems)[number];
-  active: string;
-  menu?: boolean;
-  onNavigate?: () => void;
-}) {
-  const current = item.id === active;
-  return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      aria-current={current ? "page" : undefined}
-      className={
-        menu
-          ? current
-            ? "text-ink"
-            : "text-muted"
-          : `mi-navlink ${current ? "border-b-2 border-accent text-ink" : "text-muted"}`
-      }
-    >
-      {item.label}
-    </Link>
   );
 }
 

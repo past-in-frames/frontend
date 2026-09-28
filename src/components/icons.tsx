@@ -1,19 +1,4 @@
-export function SearchIcon({ size = 17 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--ink)"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
+import Image from "next/image";
 
 export function ImageIcon({ size = 30 }: { size?: number }) {
   return (
@@ -28,14 +13,6 @@ export function ImageIcon({ size = 30 }: { size?: number }) {
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <path d="M21 15l-5-5L5 21" />
-    </svg>
-  );
-}
-
-export function PlayIcon({ size = 26 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="var(--ink)">
-      <path d="M8 5v14l11-7z" />
     </svg>
   );
 }
@@ -93,11 +70,12 @@ export function LogoMark({ size = 36 }: { size?: number }) {
       className="inline-flex shrink-0 overflow-hidden rounded-[7px]"
       style={{ width: size, height: size }}
     >
-      <img
+      <Image
         src="/logo.png"
         alt=""
         width={size}
         height={size}
+        priority
         className="h-full w-full origin-center scale-[1.55] object-cover"
       />
     </span>
