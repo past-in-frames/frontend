@@ -27,6 +27,22 @@ export function labelFromSlug(slug: string) {
     .join(" ");
 }
 
+/** Event dates are stored as `YYYY-MM-DD`, so the year is the first segment. */
+export function eventYear(value: string) {
+  return value.slice(0, 4);
+}
+
+export function formatMonthDay(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
 export function formatEventDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
   if (!year || !month || !day) return value;

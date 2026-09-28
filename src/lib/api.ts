@@ -83,9 +83,12 @@ async function apiGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function getStories(category?: string) {
-  const query = category ? `?category=${encodeURIComponent(category)}` : "";
-  return apiGet<StorySummary[]>(`/api/stories${query}`);
+export function getStories(options: { category?: string; limit?: number } = {}) {
+  const query = new URLSearchParams();
+  if (options.category) query.set("category", options.category);
+  if (options.limit) query.set("limit", String(options.limit));
+  const search = query.size > 0 ? `?${query}` : "";
+  return apiGet<StorySummary[]>(`/api/stories${search}`);
 }
 
 export function getStoriesByType(type: "science" | "history") {

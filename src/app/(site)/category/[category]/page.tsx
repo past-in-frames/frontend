@@ -53,7 +53,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const label = categoryLabel(name);
   const { data: stories, error } = await tryGet(
-    () => (section ? getStoriesByType(section) : getStories(name)),
+    () => (section ? getStoriesByType(section) : getStories({ category: name })),
     [],
   );
 

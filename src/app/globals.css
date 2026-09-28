@@ -11,12 +11,8 @@
   --accent-2: #c2410c;
   --accent-2-soft: rgba(194, 65, 12, 0.35);
   --accent-2-dark: #7c2d0c;
-  --card-hover: #b4711f;
   --rust: #c2410c;
-  --rust-dark: #7c2d0c;
-  --teal-mid: #17453d;
   --teal-deep: #0e2e28;
-  --video: #0e1013;
   --white: #ffffff;
 
   --background: var(--cream);
@@ -36,12 +32,8 @@
   --color-accent-2: var(--accent-2);
   --color-accent-2-soft: var(--accent-2-soft);
   --color-accent-2-dark: var(--accent-2-dark);
-  --color-card-hover: var(--card-hover);
   --color-rust: var(--rust);
-  --color-rust-dark: var(--rust-dark);
-  --color-teal-mid: var(--teal-mid);
   --color-teal-deep: var(--teal-deep);
-  --color-video: var(--video);
   --color-white: var(--white);
   --font-sans: var(--font-source-sans);
   --font-serif: var(--font-fraunces);
@@ -74,7 +66,7 @@ a {
 }
 
 .mi-card:hover .mi-card-title {
-  color: var(--card-hover);
+  color: var(--accent-2);
 }
 
 .mi-navlink {
@@ -83,7 +75,7 @@ a {
 }
 
 .mi-navlink:hover {
-  color: var(--card-hover);
+  color: var(--accent-2);
 }
 
 .mi-body {
