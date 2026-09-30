@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Story } from "@/lib/api";
+import type { Story, StoryMedia } from "@/lib/api";
 import { categoryLabel, categoryPath, formatEventDate } from "@/lib/story-path";
 
 const FIGURE_SIZES = "(min-width: 1024px) 780px, 100vw";
@@ -9,6 +9,7 @@ export function StoryArticle({ story }: { story: Story }) {
   const mediaByKey = new Map(story.media.map((item) => [item.key, item]));
   // Only the opening paragraph gets a drop cap.
   const firstParagraph = story.body.findIndex((block) => block.type === "paragraph");
+  const lead = leadImage(story);
 
   return (
     <article className="flex flex-grow flex-col px-[18px] pt-6 lg:items-center lg:px-16 lg:pt-12">
@@ -43,6 +44,8 @@ export function StoryArticle({ story }: { story: Story }) {
           </time>
         </header>
 
+        {lead ? <StoryFigure media={lead} priority className="m-0" /> : null}
+
         <div>
           {story.body.map((block, index) => {
             if (block.type === "heading") {
@@ -63,26 +66,7 @@ export function StoryArticle({ story }: { story: Story }) {
                 return null;
               }
 
-              return (
-                <figure key={index} className="my-6">
-                  <div className="relative h-[220px] w-full overflow-hidden rounded-2xl lg:h-[440px] lg:rounded-[18px]">
-                    <Image
-                      src={media.url}
-                      alt={media.altText ?? ""}
-                      fill
-                      sizes={FIGURE_SIZES}
-                      className="object-cover"
-                    />
-                  </div>
-                  {media.caption || media.credit ? (
-                    <figcaption className="mt-2 text-[13px] text-faded">
-                      {media.caption}
-                      {media.caption && media.credit ? " · " : ""}
-                      {media.credit}
-                    </figcaption>
-                  ) : null}
-                </figure>
-              );
+              return <StoryFigure key={index} media={media} />;
             }
 
             return (
@@ -120,5 +104,53 @@ export function StoryArticle({ story }: { story: Story }) {
         ) : null}
       </div>
     </article>
+  );
+}
+
+/**
+ * Listings and link previews use the story's first stored image. Readers should
+ * meet it too, unless the body already shows that same picture further down.
+ */
+function leadImage(story: Story) {
+  const cover = story.media.find((item) => item.type === "image" && item.url);
+  if (!cover?.url) return null;
+
+  const inBody = story.body.some(
+    (block) => block.type === "image" && block.mediaKey === cover.key,
+  );
+  return inBody ? null : cover;
+}
+
+function StoryFigure({
+  media,
+  priority = false,
+  className = "my-6",
+}: {
+  media: StoryMedia;
+  priority?: boolean;
+  className?: string;
+}) {
+  if (!media.url) return null;
+
+  return (
+    <figure className={className}>
+      <div className="relative h-[220px] w-full overflow-hidden rounded-2xl lg:h-[440px] lg:rounded-[18px]">
+        <Image
+          src={media.url}
+          alt={media.altText ?? ""}
+          fill
+          sizes={FIGURE_SIZES}
+          priority={priority}
+          className="object-cover"
+        />
+      </div>
+      {media.caption || media.credit ? (
+        <figcaption className="mt-2 text-[13px] text-faded">
+          {media.caption}
+          {media.caption && media.credit ? " · " : ""}
+          {media.credit}
+        </figcaption>
+      ) : null}
+    </figure>
   );
 }
