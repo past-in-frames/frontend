@@ -6,7 +6,7 @@ import { categoryLabel, eventYear, formatEventDate, storyPath } from "@/lib/stor
 /** Three across on desktop, so the browser only needs a third of the viewport. */
 const CARD_SIZES = "(min-width: 1024px) 33vw, 100vw";
 
-export function StoryCard({ story, priority = false }: { story: StorySummary; priority?: boolean }) {
+export function StoryCard({ story, eager = false }: { story: StorySummary; eager?: boolean }) {
   return (
     <Link
       href={storyPath(story.category, story.slug)}
@@ -19,7 +19,7 @@ export function StoryCard({ story, priority = false }: { story: StorySummary; pr
             alt={story.coverAlt ?? ""}
             fill
             sizes={CARD_SIZES}
-            priority={priority}
+            loading={eager ? "eager" : "lazy"}
             className="object-cover"
           />
         </div>
@@ -53,8 +53,9 @@ export function StoryGrid({ stories, empty }: { stories: StorySummary[]; empty: 
 
   return (
     <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3 lg:gap-7">
+      {/* The first row is above the fold, so it should not wait on lazy loading. */}
       {stories.map((story, index) => (
-        <StoryCard key={story.slug} story={story} priority={index < 3} />
+        <StoryCard key={story.slug} story={story} eager={index < 3} />
       ))}
     </div>
   );

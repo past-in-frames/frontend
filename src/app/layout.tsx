@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   },
 };
 
+/** Development page views are not real traffic, so they stay out of Analytics. */
+const analytics = process.env.NODE_ENV === "production";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -56,14 +59,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         {/* gtag.js appends its own tags to <head>, so it has to be injected
             outside the tree React hydrates. */}
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-W3QTDWTHDG" />
-        <Script id="gtag-init">
-          {`window.dataLayer = window.dataLayer || [];
+        {analytics ? (
+          <>
+            <Script src="https://www.googletagmanager.com/gtag/js?id=G-W3QTDWTHDG" />
+            <Script id="gtag-init">
+              {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 
 gtag('config', 'G-W3QTDWTHDG');`}
-        </Script>
+            </Script>
+          </>
+        ) : null}
       </body>
     </html>
   );

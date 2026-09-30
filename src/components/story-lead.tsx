@@ -29,7 +29,9 @@ export function StoryLead({ story }: { story: StorySummary }) {
             alt={story.coverAlt ?? ""}
             fill
             sizes={LEAD_SIZES}
-            priority
+            /* The home page's largest paint, so it never waits on lazy loading. */
+            loading="eager"
+            fetchPriority="high"
             className="object-cover"
           />
         </div>

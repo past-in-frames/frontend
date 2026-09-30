@@ -10,6 +10,8 @@ export function StoryArticle({ story }: { story: Story }) {
   // Only the opening paragraph gets a drop cap.
   const firstParagraph = story.body.findIndex((block) => block.type === "paragraph");
   const lead = leadImage(story);
+  // Whichever image opens the story is the one worth loading immediately.
+  const firstBodyImage = lead ? -1 : story.body.findIndex((block) => block.type === "image");
 
   return (
     <article className="flex flex-grow flex-col px-[18px] pt-6 lg:items-center lg:px-16 lg:pt-12">
@@ -44,7 +46,7 @@ export function StoryArticle({ story }: { story: Story }) {
           </time>
         </header>
 
-        {lead ? <StoryFigure media={lead} priority className="m-0" /> : null}
+        {lead ? <StoryFigure media={lead} eager className="m-0" /> : null}
 
         <div>
           {story.body.map((block, index) => {
@@ -66,7 +68,7 @@ export function StoryArticle({ story }: { story: Story }) {
                 return null;
               }
 
-              return <StoryFigure key={index} media={media} />;
+              return <StoryFigure key={index} media={media} eager={index === firstBodyImage} />;
             }
 
             return (
@@ -123,11 +125,11 @@ function leadImage(story: Story) {
 
 function StoryFigure({
   media,
-  priority = false,
+  eager = false,
   className = "my-6",
 }: {
   media: StoryMedia;
-  priority?: boolean;
+  eager?: boolean;
   className?: string;
 }) {
   if (!media.url) return null;
@@ -140,7 +142,8 @@ function StoryFigure({
           alt={media.altText ?? ""}
           fill
           sizes={FIGURE_SIZES}
-          priority={priority}
+          loading={eager ? "eager" : "lazy"}
+          fetchPriority={eager ? "high" : undefined}
           className="object-cover"
         />
       </div>

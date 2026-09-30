@@ -49,6 +49,11 @@ export function FacebookIcon({ size = 15 }: { size?: number }) {
   );
 }
 
+/**
+ * The header and footer each render a mark, and the header keeps a second one
+ * for the other breakpoint. Lazy loading is what stops the copies that are
+ * hidden at the current width from being fetched and preloaded as well.
+ */
 export function LogoMark({ size = 36 }: { size?: number }) {
   return (
     <span
@@ -60,7 +65,6 @@ export function LogoMark({ size = 36 }: { size?: number }) {
         alt=""
         width={size}
         height={size}
-        priority
         className="h-full w-full origin-center scale-[1.55] object-cover"
       />
     </span>
