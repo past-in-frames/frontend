@@ -12,7 +12,9 @@ export function AdminLoginForm() {
     event.preventDefault();
     if (pending) return;
 
-    const password = String(new FormData(event.currentTarget).get("password") ?? "");
+    const password = String(
+      new FormData(event.currentTarget).get("password") ?? "",
+    );
     setPending(true);
     setError("");
 
@@ -24,7 +26,9 @@ export function AdminLoginForm() {
       });
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as { message?: string } | null;
+        const body = (await response.json().catch(() => null)) as {
+          message?: string;
+        } | null;
         setError(body?.message ?? "Incorrect password");
         return;
       }

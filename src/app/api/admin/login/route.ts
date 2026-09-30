@@ -19,7 +19,10 @@ export async function POST(request: Request) {
       cache: "no-store",
     });
   } catch {
-    return Response.json({ message: "Couldn't reach the server" }, { status: 502 });
+    return Response.json(
+      { message: "Couldn't reach the server" },
+      { status: 502 },
+    );
   }
 
   if (!response.ok) {
@@ -32,14 +35,25 @@ export async function POST(request: Request) {
     );
   }
 
-  const session = (await response.json()) as { token?: string; expiresAt?: string };
+  const session = (await response.json()) as {
+    token?: string;
+    expiresAt?: string;
+  };
   if (!session.token || !session.expiresAt) {
-    return Response.json({ message: "Couldn't reach the server" }, { status: 502 });
+    return Response.json(
+      { message: "Couldn't reach the server" },
+      { status: 502 },
+    );
   }
 
-  const maxAge = Math.floor((Date.parse(session.expiresAt) - Date.now()) / 1000);
+  const maxAge = Math.floor(
+    (Date.parse(session.expiresAt) - Date.now()) / 1000,
+  );
   if (!Number.isFinite(maxAge) || maxAge <= 0) {
-    return Response.json({ message: "Couldn't reach the server" }, { status: 502 });
+    return Response.json(
+      { message: "Couldn't reach the server" },
+      { status: 502 },
+    );
   }
 
   const cookieStore = await cookies();
