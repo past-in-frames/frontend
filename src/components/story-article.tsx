@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Story, StoryMedia } from "@/lib/api";
+import type { Story, StoryMedia, StorySummary } from "@/lib/api";
+import { StoryCard } from "@/components/story-card";
 import { categoryLabel, categoryPath, formatEventDate } from "@/lib/story-path";
 
 const FIGURE_SIZES = "(min-width: 1024px) 780px, 100vw";
 
-export function StoryArticle({ story }: { story: Story }) {
+export function StoryArticle({ story, related = [] }: { story: Story; related?: StorySummary[] }) {
+  const headings = story.body.flatMap((block, index) => block.type === "heading" ? [{ text: block.text, id: `section-${index}` }] : []);
+  const words = story.body.reduce((count, block) => count + (block.type === "paragraph" ? block.text.trim().split(/\s+/).filter(Boolean).length : 0), 0);
   const mediaByKey = new Map(story.media.map((item) => [item.key, item]));
   // Only the opening paragraph gets a drop cap.
   const firstParagraph = story.body.findIndex((block) => block.type === "paragraph");
@@ -17,7 +20,7 @@ export function StoryArticle({ story }: { story: Story }) {
     <article className="flex flex-grow flex-col px-[18px] pt-6 lg:items-center lg:px-16 lg:pt-12">
       <div className="flex w-full max-w-[780px] flex-col gap-5 lg:gap-7">
         <header className="flex flex-col gap-3 lg:gap-4">
-          <nav className="hidden text-[13px] font-semibold text-faded lg:block">
+          <nav aria-label="Breadcrumb" className="text-[13px] font-semibold text-faded">
             <Link href="/" className="mi-link">
               Home
             </Link>
@@ -42,9 +45,20 @@ export function StoryArticle({ story }: { story: Story }) {
             dateTime={story.eventDate}
             className="text-xs text-faded lg:text-[13px]"
           >
-            {formatEventDate(story.eventDate)}
+            Event date: {formatEventDate(story.eventDate)}
           </time>
+          <p className="m-0 text-xs text-faded">
+            {story.publishedAt ? <>Published <time dateTime={story.publishedAt}>{formatEventDate(story.publishedAt.slice(0, 10))}</time> · </> : null}
+            Updated <time dateTime={story.updatedAt}>{formatEventDate(story.updatedAt.slice(0, 10))}</time> · {Math.max(1, Math.ceil(words / 200))} min read
+          </p>
         </header>
+
+        {headings.length > 1 ? (
+          <nav aria-label="In this story" className="rounded-xl border border-ink/12 p-4">
+            <p className="m-0 mb-2 font-semibold">In this story</p>
+            <ul className="m-0 space-y-1 pl-5">{headings.map((heading) => <li key={heading.id}><a className="mi-link" href={`#${heading.id}`}>{heading.text}</a></li>)}</ul>
+          </nav>
+        ) : null}
 
         {lead ? <StoryFigure media={lead} eager className="m-0" /> : null}
 
@@ -54,7 +68,8 @@ export function StoryArticle({ story }: { story: Story }) {
               return (
                 <h2
                   key={index}
-                  className="m-0 mt-2 mb-4 font-serif text-[22px] font-semibold lg:text-[26px]"
+                  id={`section-${index}`}
+                  className="scroll-mt-24 m-0 mt-2 mb-4 font-serif text-[22px] font-semibold lg:text-[26px]"
                 >
                   {block.text}
                 </h2>
@@ -104,6 +119,8 @@ export function StoryArticle({ story }: { story: Story }) {
             </ul>
           </section>
         ) : null}
+        <p className="text-sm text-faded">Found an error? <Link className="mi-link" href="/contact">Send a correction</Link>. <Link className="mi-link" href="/editorial-policy">Read our editorial standards</Link>.</p>
+        {related.length > 0 ? <section className="pb-10"><h2 className="mb-4 font-serif text-2xl font-semibold">More in {categoryLabel(story.category)}</h2><div className="grid gap-5 sm:grid-cols-3">{related.map((item) => <StoryCard key={item.slug} story={item} />)}</div></section> : null}
       </div>
     </article>
   );
@@ -147,11 +164,12 @@ function StoryFigure({
           className="object-cover"
         />
       </div>
-      {media.caption || media.credit ? (
+      {media.caption || media.credit || media.isAiGenerated ? (
         <figcaption className="mt-2 text-[13px] text-faded">
           {media.caption}
           {media.caption && media.credit ? " · " : ""}
           {media.credit}
+          {media.isAiGenerated ? <span className="block mt-1">AI-generated illustration — a recreation, not an archival photograph.</span> : null}
         </figcaption>
       ) : null}
     </figure>

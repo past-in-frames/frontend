@@ -20,9 +20,11 @@ export type StoryMedia = {
   caption: string | null;
   altText: string | null;
   credit: string | null;
+  isAiGenerated?: boolean;
 };
 
 export type StorySummary = {
+  updatedAt?: string;
   slug: string;
   title: string;
   summary: string;
