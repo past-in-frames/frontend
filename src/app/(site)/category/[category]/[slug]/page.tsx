@@ -69,13 +69,18 @@ export default async function StoryPage({ params }: StoryPageProps) {
     notFound();
   }
 
+  const { data: related } = await tryGet(
+    () => getStories({ category: story.category, limit: 4, sort: "latest" }),
+    [],
+  );
+
   return (
     <>
-      <StoryArticle story={story} />
+      <StoryArticle story={story} related={related.filter((item) => item.slug !== story.slug).slice(0, 3)} />
       <script
         type="application/ld+json"
-        // Structured data helps the story surface as a news result and in link previews.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd(story)) }}
+        // Escape HTML delimiters in stored article text.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd(story)).replace(/</g, "\\u003c") }}
       />
     </>
   );
@@ -86,7 +91,7 @@ function articleJsonLd(story: Story) {
 
   return {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
+    "@type": "Article",
     headline: story.title,
     description: story.summary,
     datePublished: story.publishedAt ?? undefined,

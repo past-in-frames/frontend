@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     tryGet(getCategories, []),
   ]);
 
-  const staticPages: MetadataRoute.Sitemap = ["/", "/about", "/privacy", "/terms"].map(
+  const staticPages: MetadataRoute.Sitemap = ["/", "/about", "/editorial-policy", "/contact", "/privacy", "/terms"].map(
     (path) => ({
       url: absoluteUrl(path),
       changeFrequency: path === "/" ? "daily" : "yearly",
@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...stories.map((story) => ({
       url: absoluteUrl(storyPath(story.category, story.slug)),
-      lastModified: new Date(story.eventDate),
+      lastModified: story.updatedAt ? new Date(story.updatedAt) : undefined,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),

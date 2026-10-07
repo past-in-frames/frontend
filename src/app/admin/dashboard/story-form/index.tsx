@@ -11,6 +11,7 @@ import {
 } from "react";
 import { storyPath } from "@/lib/story-path";
 import type { StoryInput } from "../story-types";
+import { EditorialReview } from "./editorial-review";
 import { BodySection } from "./body-section";
 import { Button } from "./controls";
 import { CoverSection } from "./cover-section";
@@ -361,6 +362,7 @@ export function StoryForm({
         </header>
 
         <div className="flex max-w-4xl flex-col gap-5 px-[18px] py-6 lg:px-16 lg:py-10">
+          <EditorialReview story={story} />
           <DetailsSection publishedSlug={stored?.slug} />
           <CoverSection />
           <BodySection />

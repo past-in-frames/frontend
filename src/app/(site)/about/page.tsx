@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { PageHeader, PageShell } from "@/components/page-header";
 
@@ -18,9 +19,10 @@ export default function AboutPage() {
           forgotten inventions.
         </p>
         <p className="m-0">
-          Each piece is meant to take about five minutes. One curiosity, every
-          day, with the sources left in plain sight.
+          Explore historical events, the people involved and the consequences
+          that followed. Source links provide a starting point for further reading.
         </p>
+        <p className="m-0">Our <Link className="mi-link" href="/editorial-policy">editorial policy</Link> explains our standards for sources, AI illustrations and corrections. To flag an error or suggest a topic, <Link className="mi-link" href="/contact">contact us</Link>.</p>
       </div>
     </PageShell>
   );
