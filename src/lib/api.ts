@@ -29,7 +29,7 @@ export type StorySummary = {
   title: string;
   summary: string;
   eventDate: string;
-  category: string;
+  type: string | null;
   coverUrl: string | null;
   coverAlt: string | null;
 };
@@ -41,13 +41,11 @@ export type Story = {
   eventDate: string;
   publishedAt: string | null;
   updatedAt: string;
-  category: string;
+  type: string | null;
   body: StoryBlock[];
   media: StoryMedia[];
   sources: { title: string; url: string; publisher: string }[];
 };
-
-export type Category = { name: string; count: number };
 
 export class ApiError extends Error {
   constructor(
@@ -91,8 +89,8 @@ async function apiGet<T>(path: string): Promise<T> {
 }
 
 type StoryListOptions = {
-  category?: string;
-  type?: "science" | "history";
+  type?: "science" | "history" | "other";
+  excludeType?: "other";
   limit?: number;
   offset?: number;
   sort?: "latest";
@@ -100,8 +98,8 @@ type StoryListOptions = {
 
 function storyListPath(options: StoryListOptions) {
   const query = new URLSearchParams();
-  if (options.category) query.set("category", options.category);
   if (options.type) query.set("type", options.type);
+  if (options.excludeType) query.set("exclude", options.excludeType);
   if (options.limit) query.set("limit", String(options.limit));
   if (options.offset) query.set("offset", String(options.offset));
   if (options.sort) query.set("sort", options.sort);
@@ -125,10 +123,6 @@ export async function getStories(options: StoryListOptions = {}) {
 
 export function searchStories(title: string) {
   return apiGet<StorySummary[]>(`/api/stories?q=${encodeURIComponent(title)}`);
-}
-
-export function getCategories() {
-  return apiGet<Category[]>("/api/stories/categories");
 }
 
 export function getStory(slug: string) {

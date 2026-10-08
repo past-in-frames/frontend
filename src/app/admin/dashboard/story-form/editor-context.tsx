@@ -10,7 +10,6 @@ export type EditorValue = {
   actions: DraftActions;
   /** Only the errors worth showing yet — empty until the first save attempt. */
   errors: FieldErrors;
-  categories: string[];
   /** Media row claimed by the cover card while it waits for an image. */
   coverDraft: string;
   /** Media key currently being uploaded, so only that control shows progress. */

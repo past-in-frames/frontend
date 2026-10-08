@@ -25,18 +25,16 @@ import { validateStory } from "./story-validation";
 const IMAGE_TYPES = "image/jpeg,image/png,image/webp,image/gif,image/avif";
 
 /** What the API currently holds, which is not always what is on screen. */
-type Stored = { slug: string; status: string; category: string };
+type Stored = { slug: string; status: string; type: string };
 
 export function StoryForm({
   mode,
   initial,
   originalSlug,
-  categories,
 }: {
   mode: "create" | "edit";
   initial: StoryInput;
   originalSlug?: string;
-  categories: string[];
 }) {
   const router = useRouter();
   const { story, actions, coverDraft, dirty, markSaved } = useStoryDraft(
@@ -48,7 +46,7 @@ export function StoryForm({
       ? {
           slug: originalSlug,
           status: initial.status,
-          category: initial.category,
+          type: initial.type,
         }
       : null,
   );
@@ -125,7 +123,7 @@ export function StoryForm({
       setStored({
         slug: saved.slug,
         status: saved.status,
-        category: saved.category,
+        type: saved.type,
       });
       // The dashboard list is rendered on the server, so it needs the news.
       router.refresh();
@@ -229,7 +227,7 @@ export function StoryForm({
 
   const liveUrl =
     stored?.status === "published"
-      ? storyPath(stored.category, stored.slug)
+      ? storyPath(stored.type, stored.slug) ?? undefined
       : null;
 
   return (
@@ -238,7 +236,6 @@ export function StoryForm({
         story,
         actions,
         errors: checked ? problems : {},
-        categories,
         coverDraft,
         uploadingKey,
         openPicker,

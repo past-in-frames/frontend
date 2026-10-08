@@ -1,6 +1,5 @@
 "use client";
 
-import { useId } from "react";
 import { formatEventDate, storyPath } from "@/lib/story-path";
 import {
   FormSection,
@@ -13,16 +12,17 @@ import {
 import { useEditor } from "./editor-context";
 import { isCalendarDate, LIMITS } from "./story-validation";
 
-/** The site header links these two, and it reads `type` to fill them. */
+/** The site header links these, and it reads `type` to fill them. */
 const SECTIONS = [
   { value: "science", label: "Science" },
   { value: "history", label: "History" },
+  { value: "other", label: "M&I" },
 ];
 
 export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
-  const { story, actions, errors, categories } = useEditor();
-  const categoryListId = useId();
+  const { story, actions, errors } = useEditor();
   const slug = story.slug.trim();
+  const path = slug ? storyPath(story.type, slug) : null;
   const slugMoved = Boolean(publishedSlug) && slug !== publishedSlug;
   const knownType = SECTIONS.some((section) => section.value === story.type);
 
@@ -49,19 +49,6 @@ export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <TextField
-          label="Category"
-          required
-          value={story.category}
-          onChange={(category) => actions.update({ category })}
-          error={errors.category}
-          maxLength={LIMITS.category}
-          list={categoryListId}
-          autoComplete="off"
-          hint={
-            categories.length > 0 ? "Reuse a category to group stories." : undefined
-          }
-        />
-        <TextField
           label="Event date"
           required
           type="date"
@@ -78,7 +65,7 @@ export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
           label="Section"
           value={story.type}
           onChange={(type) => actions.update({ type })}
-          hint="Lists the story under Science or History in the site header."
+          hint="Lists the story under Science, History, or M&I in the site header."
         >
           <option value="">None</option>
           {SECTIONS.map((section) => (
@@ -108,9 +95,9 @@ export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
           spellCheck={false}
           className="lg:col-span-2"
           hint={
-            slug && story.category.trim()
-              ? `The story will live at ${storyPath(story.category, slug)}`
-              : "Lowercase letters, numbers and hyphens."
+            path
+              ? `The story will live at ${path}`
+              : "Lowercase letters, numbers and hyphens. The address follows the section."
           }
         />
         <Segmented
@@ -135,11 +122,6 @@ export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
           working.
         </Note>
       ) : null}
-      <datalist id={categoryListId}>
-        {categories.map((category) => (
-          <option key={category} value={category} />
-        ))}
-      </datalist>
     </FormSection>
   );
 }

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadAdmin } from "@/lib/admin-proxy";
-import { loadCategories } from "../../story-categories";
 import { StoryForm } from "../../story-form";
 import type { StoryInput } from "../../story-types";
 
@@ -17,10 +16,7 @@ export default async function EditStoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [result, categories] = await Promise.all([
-    loadAdmin<StoryInput>(`/api/admin/stories/${encodeURIComponent(slug)}`),
-    loadCategories(),
-  ]);
+  const result = await loadAdmin<StoryInput>(`/api/admin/stories/${encodeURIComponent(slug)}`);
 
   if (!result.ok && result.status === 404) {
     notFound();
@@ -51,7 +47,6 @@ export default async function EditStoryPage({
         mode="edit"
         initial={result.data}
         originalSlug={slug}
-        categories={categories}
       />
     </main>
   );

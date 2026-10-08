@@ -1,15 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { StorySummary } from "@/lib/api";
-import { categoryLabel, eventYear, formatEventDate, storyPath } from "@/lib/story-path";
+import { eventYear, formatEventDate, sectionLabel, storyPath } from "@/lib/story-path";
 
 /** Three across on desktop, so the browser only needs a third of the viewport. */
 const CARD_SIZES = "(min-width: 1024px) 33vw, 100vw";
 
 export function StoryCard({ story, eager = false }: { story: StorySummary; eager?: boolean }) {
+  const label = sectionLabel(story.type);
   return (
     <Link
-      href={storyPath(story.category, story.slug)}
+      href={storyPath(story.type, story.slug) ?? "/"}
       className="mi-card flex flex-col overflow-hidden rounded-2xl border border-ink/8 bg-white lg:gap-3.5"
     >
       {story.coverUrl ? (
@@ -32,9 +33,11 @@ export function StoryCard({ story, eager = false }: { story: StorySummary; eager
         </div>
       )}
       <div className="flex flex-col gap-1.5 px-4 py-4 lg:gap-2 lg:px-[18px] lg:pt-0 lg:pb-5">
-        <span className="text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:text-xs lg:tracking-[0.08em]">
-          {categoryLabel(story.category)}
-        </span>
+        {label ? (
+          <span className="text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:text-xs lg:tracking-[0.08em]">
+            {label}
+          </span>
+        ) : null}
         <span className="mi-card-title font-serif text-lg leading-tight font-semibold lg:text-xl lg:leading-[1.25]">
           {story.title}
         </span>

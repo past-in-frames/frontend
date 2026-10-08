@@ -86,7 +86,6 @@ export function cleanStory(story: StoryInput): StoryInput {
     slug: story.slug.trim(),
     title: story.title.trim(),
     summary: story.summary.trim(),
-    category: story.category.trim(),
     type: story.type.trim(),
     subtype: story.subtype.trim(),
     body,

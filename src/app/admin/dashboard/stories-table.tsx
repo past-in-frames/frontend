@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { sectionLabel } from "@/lib/story-path";
 
 export type AdminStory = {
   slug: string;
   title: string;
   summary: string;
   eventDate: string;
-  category: string;
+  type: string | null;
   status: string;
 };
 
@@ -22,7 +23,7 @@ export function StoriesTable({ stories }: { stories: AdminStory[] }) {
   const visible = useMemo(() => {
     if (!normalized) return stories;
     return stories.filter((story) =>
-      [story.title, story.summary, story.slug, story.category, story.status, story.eventDate, formatEventDate(story.eventDate)]
+      [story.title, story.summary, story.slug, story.type, story.status, story.eventDate, formatEventDate(story.eventDate)]
         .join(" ")
         .toLowerCase()
         .includes(normalized),
@@ -86,7 +87,7 @@ export function StoriesTable({ stories }: { stories: AdminStory[] }) {
           <thead>
             <tr className="border-b border-ink/15 text-xs tracking-[0.08em] text-faded uppercase">
               <th className="py-3 pr-4 font-semibold">Title</th>
-              <th className="py-3 pr-4 font-semibold">Category</th>
+              <th className="py-3 pr-4 font-semibold">Section</th>
               <th className="py-3 pr-4 font-semibold">Date</th>
               <th className="py-3 pr-4 font-semibold">Status</th>
               <th className="py-3 pr-4 font-semibold">Slug</th>
@@ -111,7 +112,7 @@ export function StoriesTable({ stories }: { stories: AdminStory[] }) {
                       {story.summary}
                     </p>
                   </td>
-                  <td className="py-4 pr-4 text-sm text-body">{story.category}</td>
+                  <td className="py-4 pr-4 text-sm text-body">{sectionLabel(story.type) || "—"}</td>
                   <td className="py-4 pr-4 text-sm whitespace-nowrap text-body">
                     {formatEventDate(story.eventDate)}
                   </td>

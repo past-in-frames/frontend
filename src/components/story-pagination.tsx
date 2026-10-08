@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categoryPageHref } from "@/lib/paging";
+import { pageHref } from "@/lib/paging";
 
 /** Enough room for the current page and two neighbors, without a long run of numbers. */
 function visiblePages(page: number, pageCount: number) {
@@ -26,13 +26,13 @@ export function StoryPagination({
 
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-2">
-      <PageLink href={page > 1 ? categoryPageHref(path, page - 1) : undefined}>Previous</PageLink>
+      <PageLink href={page > 1 ? pageHref(path, page - 1) : undefined}>Previous</PageLink>
       {pages.map((number) => (
-        <PageLink key={number} href={categoryPageHref(path, number)} current={number === page}>
+        <PageLink key={number} href={pageHref(path, number)} current={number === page}>
           {number}
         </PageLink>
       ))}
-      <PageLink href={page < pageCount ? categoryPageHref(path, page + 1) : undefined}>Next</PageLink>
+      <PageLink href={page < pageCount ? pageHref(path, page + 1) : undefined}>Next</PageLink>
     </nav>
   );
 }

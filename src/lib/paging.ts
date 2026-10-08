@@ -1,8 +1,8 @@
 export const HOME_PAGE_SIZE = 20;
 export const CATEGORY_PAGE_SIZE = 12;
 
-/** Page 1 keeps the clean category URL; later pages add `?page=`. */
-export function categoryPageHref(path: string, page: number) {
+/** Page 1 keeps the clean section URL; later pages add `?page=`. */
+export function pageHref(path: string, page: number) {
   return page <= 1 ? path : `${path}?page=${page}`;
 }
 

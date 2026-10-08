@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { StorySummary } from "@/lib/api";
-import { categoryLabel, eventYear, formatEventDate, storyPath } from "@/lib/story-path";
+import { eventYear, formatEventDate, sectionLabel, storyPath } from "@/lib/story-path";
 
 /** The lead image is the largest thing on the home page, so it gets most of the viewport. */
 const LEAD_SIZES = "(min-width: 1024px) 60vw, 100vw";
@@ -15,7 +15,7 @@ const SECONDARY_SIZES = "(min-width: 1024px) 120px, 92px";
 export function StoryLead({ story }: { story: StorySummary }) {
   return (
     <Link
-      href={storyPath(story.category, story.slug)}
+      href={storyPath(story.type, story.slug) ?? "/"}
       className={`mi-card flex flex-col gap-4 ${
         story.coverUrl
           ? "lg:grid lg:grid-cols-[1.35fr_1fr] lg:items-center lg:gap-12"
@@ -41,7 +41,7 @@ export function StoryLead({ story }: { story: StorySummary }) {
           {eventYear(story.eventDate)}
         </span>
         <span className="text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:text-xs lg:tracking-[0.08em]">
-          {categoryLabel(story.category)}
+          {sectionLabel(story.type)}
         </span>
         <h2 className="mi-card-title m-0 font-serif text-[26px] leading-[1.15] font-semibold tracking-[-0.01em] lg:text-[38px] lg:leading-[1.1]">
           {story.title}
@@ -64,7 +64,7 @@ export function StoryLead({ story }: { story: StorySummary }) {
 export function StorySecondary({ story }: { story: StorySummary }) {
   return (
     <Link
-      href={storyPath(story.category, story.slug)}
+      href={storyPath(story.type, story.slug) ?? "/"}
       className="mi-card flex items-start gap-4 lg:gap-5"
     >
       {story.coverUrl ? (
@@ -84,7 +84,7 @@ export function StorySecondary({ story }: { story: StorySummary }) {
       )}
       <div className="flex min-w-0 flex-col gap-1.5">
         <span className="text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:text-xs">
-          {categoryLabel(story.category)}
+          {sectionLabel(story.type)}
         </span>
         <span className="mi-card-title font-serif text-lg leading-tight font-semibold lg:text-xl lg:leading-[1.25]">
           {story.title}

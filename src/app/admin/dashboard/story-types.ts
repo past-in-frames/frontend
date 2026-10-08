@@ -24,7 +24,6 @@ export type StoryInput = {
   title: string;
   summary: string;
   eventDate: string;
-  category: string;
   status: "draft" | "published";
   type: string;
   subtype: string;
@@ -39,7 +38,6 @@ export function blankStory(): StoryInput {
     title: "",
     summary: "",
     eventDate: "",
-    category: "",
     status: "draft",
     type: "",
     subtype: "",

@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { HomeFeed } from "@/app/(site)/home-feed";
 import { PageShell } from "@/components/page-header";
-import { getCategories, getStoriesPage, tryGet, type Category, type StorySummary } from "@/lib/api";
+import { getStoriesPage, tryGet, type StorySummary } from "@/lib/api";
 import { HOME_PAGE_SIZE } from "@/lib/paging";
-import { categoryLabel, categoryPath, eventYear } from "@/lib/story-path";
+import { eventYear } from "@/lib/story-path";
 
 const todayFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
@@ -12,13 +11,10 @@ const todayFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 export default async function HomePage() {
-  const [{ data: page, error }, { data: categories }] = await Promise.all([
-    tryGet(
-      () => getStoriesPage({ limit: HOME_PAGE_SIZE, sort: "latest" }),
-      { stories: [] as StorySummary[], total: 0 },
-    ),
-    tryGet(getCategories, [] as Category[]),
-  ]);
+  const { data: page, error } = await tryGet(
+    () => getStoriesPage({ limit: HOME_PAGE_SIZE, sort: "latest", excludeType: "other" }),
+    { stories: [] as StorySummary[], total: 0 },
+  );
   const { stories } = page;
   const lead = stories[0];
 
@@ -43,26 +39,6 @@ export default async function HomePage() {
       ) : null}
 
       {stories.length > 0 ? <HomeFeed initialStories={stories} total={page.total} /> : null}
-
-      {categories.length > 0 ? (
-        <section className="flex flex-col gap-3 border-t border-ink/12 pt-7 lg:gap-4 lg:pt-10">
-          <h2 className="m-0 text-[11px] font-bold tracking-[0.08em] text-pale uppercase lg:text-xs">
-            Browse by subject
-          </h2>
-          <div className="flex flex-wrap gap-2 lg:gap-2.5">
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                href={categoryPath(category.name)}
-                className="rounded-full border border-ink/18 px-3.5 py-[7px] text-[13px] font-semibold whitespace-nowrap text-muted lg:px-[18px] lg:py-[9px] lg:text-sm"
-              >
-                {categoryLabel(category.name)}{" "}
-                <span className="text-pale">{category.count}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
     </PageShell>
   );
 }

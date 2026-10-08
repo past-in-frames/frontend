@@ -1,30 +1,38 @@
-/** Categories are free text in the database, so URLs use a slugified form. */
-export function categorySlug(category: string) {
-  return category
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+/** Public sections. The URL says `others`; the story's stored type is `other`. */
+export const sections = {
+  science: { type: "science", label: "Science" },
+  history: { type: "history", label: "History" },
+  others: { type: "other", label: "Other" },
+} as const;
+
+export type SectionPath = keyof typeof sections;
+
+export const sectionNav = [
+  { href: "/science", label: sections.science.label },
+  { href: "/history", label: sections.history.label },
+] as const;
+
+export const miscellaneousHref = "/others";
+
+export function sectionFromPath(value: string): SectionPath | null {
+  return value in sections ? (value as SectionPath) : null;
 }
 
-export function categoryPath(category: string) {
-  return `/category/${categorySlug(category)}`;
+export function sectionFromType(type: string | null | undefined): SectionPath | null {
+  if (type === "science" || type === "history") return type;
+  if (type === "other") return "others";
+  return null;
 }
 
-export function storyPath(category: string, slug: string) {
-  return `${categoryPath(category)}/${slug}`;
+export function sectionLabel(type: string | null | undefined) {
+  const section = sectionFromType(type);
+  return section ? sections[section].label : "";
 }
 
-export function categoryLabel(category: string) {
-  return category.replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-export function labelFromSlug(slug: string) {
-  return slug
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+/** A story lives under its section: `/science/{slug}`. */
+export function storyPath(type: string | null | undefined, slug: string) {
+  const section = sectionFromType(type);
+  return section ? `/${section}/${slug}` : null;
 }
 
 /** Event dates are stored as `YYYY-MM-DD`, so the year is the first segment. */

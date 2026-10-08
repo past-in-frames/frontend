@@ -4,11 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
 import { BackIcon, LogoMark, SearchIcon } from "@/components/icons";
-
-const sections = [
-  { href: "/category/science", label: "Science" },
-  { href: "/category/history", label: "History" },
-];
+import { miscellaneousHref, sectionFromPath, sectionNav } from "@/lib/story-path";
 
 const desktopSearchClass = "hidden w-[220px] shrink-0 lg:block xl:w-[260px]";
 const SEARCH_DEBOUNCE_MS = 500;
@@ -31,8 +27,9 @@ export function SiteHeader() {
     setMenuOpen(false);
   }
 
-  // A story page is /category/<category>/<slug>; the mobile header shows "Back" there.
-  const isStory = pathname.split("/").filter(Boolean).length === 3;
+  // A story page is /science/<slug> (or history, others). The mobile header shows "Back" there.
+  const [section] = pathname.split("/").filter(Boolean);
+  const isStory = pathname.split("/").filter(Boolean).length === 2 && sectionFromPath(section ?? "") !== null;
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -81,22 +78,20 @@ export function SiteHeader() {
           )}
 
           <nav className="hidden items-center gap-7 text-[15px] font-semibold lg:flex">
-            {sections.map((section) => {
+            {sectionNav.map((section) => {
               const current = isSectionActive(pathname, section.href);
               return (
                 <Link
                   key={section.href}
                   href={section.href}
                   aria-current={current ? "page" : undefined}
-                  className={`mi-navlink ${
-                    current ? "border-b-2 border-accent text-ink" : "text-muted"
-                  }`}
+                  className={navLinkClass(current, true)}
                 >
                   {section.label}
                 </Link>
               );
             })}
-            <MiscellaneousMark className="mi-navlink" />
+            <MiscellaneousMark current={isSectionActive(pathname, miscellaneousHref)} desktop />
           </nav>
         </div>
 
@@ -142,7 +137,7 @@ export function SiteHeader() {
             onNavigate={closeMenu}
           />
           <nav className="flex flex-col gap-4 text-base font-semibold">
-            {sections.map((section) => {
+            {sectionNav.map((section) => {
               const current = isSectionActive(pathname, section.href);
               return (
                 <Link
@@ -155,7 +150,7 @@ export function SiteHeader() {
                 </Link>
               );
             })}
-            <MiscellaneousMark />
+            <MiscellaneousMark current={isSectionActive(pathname, miscellaneousHref)} />
           </nav>
         </div>
       ) : null}
@@ -252,16 +247,23 @@ function isSectionActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function MiscellaneousMark({ className }: { className?: string }) {
+function navLinkClass(current: boolean, desktop: boolean) {
+  const tone = current ? "text-ink" : "text-muted";
+  if (!desktop) return tone;
+  return `mi-navlink ${current ? "border-b-2 border-accent" : ""} ${tone}`;
+}
+
+function MiscellaneousMark({ current, desktop = false }: { current: boolean; desktop?: boolean }) {
   return (
     <span className="group relative">
-      <span
-        tabIndex={0}
+      <Link
+        href={miscellaneousHref}
+        aria-current={current ? "page" : undefined}
         aria-label="Miscellaneous & Interesting"
-        className={`cursor-default text-muted outline-none ${className ?? ""}`}
+        className={`outline-none ${navLinkClass(current, desktop)}`}
       >
         M&I
-      </span>
+      </Link>
       <span
         role="tooltip"
         className="pointer-events-none absolute top-full left-0 z-10 mt-3 hidden rounded-[10px] border border-ink/12 bg-cream px-3 py-2 text-sm font-semibold whitespace-nowrap text-muted shadow-[0_12px_24px_rgba(23,24,28,0.08)] group-hover:block group-focus-within:block"

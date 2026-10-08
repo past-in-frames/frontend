@@ -2,11 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Story, StoryMedia, StorySummary } from "@/lib/api";
 import { StoryCard } from "@/components/story-card";
-import { categoryLabel, categoryPath, formatEventDate } from "@/lib/story-path";
+import { sectionFromType, sections, formatEventDate } from "@/lib/story-path";
 
 const FIGURE_SIZES = "(min-width: 1024px) 780px, 100vw";
 
 export function StoryArticle({ story, related = [] }: { story: Story; related?: StorySummary[] }) {
+  const section = sectionFromType(story.type);
   const headings = story.body.flatMap((block, index) => block.type === "heading" ? [{ text: block.text, id: `section-${index}` }] : []);
   const words = story.body.reduce((count, block) => count + (block.type === "paragraph" ? block.text.trim().split(/\s+/).filter(Boolean).length : 0), 0);
   const mediaByKey = new Map(story.media.map((item) => [item.key, item]));
@@ -24,17 +25,23 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
             <Link href="/" className="mi-link">
               Home
             </Link>
-            {" / "}
-            <Link href={categoryPath(story.category)} className="mi-link">
-              {categoryLabel(story.category)}
-            </Link>
+            {section ? (
+              <>
+                {" / "}
+                <Link href={`/${section}`} className="mi-link">
+                  {sections[section].label}
+                </Link>
+              </>
+            ) : null}
           </nav>
-          <Link
-            href={categoryPath(story.category)}
-            className="self-start rounded-full bg-accent-2/12 px-3 py-[5px] text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:px-3.5 lg:py-1.5 lg:text-xs"
-          >
-            {categoryLabel(story.category)}
-          </Link>
+          {section ? (
+            <Link
+              href={`/${section}`}
+              className="self-start rounded-full bg-accent-2/12 px-3 py-[5px] text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:px-3.5 lg:py-1.5 lg:text-xs"
+            >
+              {sections[section].label}
+            </Link>
+          ) : null}
           <h1 className="m-0 font-serif text-[30px] leading-[1.15] font-semibold lg:text-5xl lg:leading-[1.12] lg:tracking-[-0.01em]">
             {story.title}
           </h1>
@@ -120,7 +127,7 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
           </section>
         ) : null}
         <p className="text-sm text-faded">Found an error? <Link className="mi-link" href="/contact">Send a correction</Link>. <Link className="mi-link" href="/editorial-policy">Read our editorial standards</Link>.</p>
-        {related.length > 0 ? <section className="pb-10"><h2 className="mb-4 font-serif text-2xl font-semibold">More in {categoryLabel(story.category)}</h2><div className="grid gap-5 sm:grid-cols-3">{related.map((item) => <StoryCard key={item.slug} story={item} />)}</div></section> : null}
+        {related.length > 0 && section ? <section className="pb-10"><h2 className="mb-4 font-serif text-2xl font-semibold">More in {sections[section].label}</h2><div className="grid gap-5 sm:grid-cols-3">{related.map((item) => <StoryCard key={item.slug} story={item} />)}</div></section> : null}
       </div>
     </article>
   );

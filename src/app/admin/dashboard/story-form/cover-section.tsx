@@ -6,7 +6,7 @@ import { ImageDrop, MediaDetails } from "./media-fields";
 import { coverIndex, referencedKeys } from "./story-draft";
 
 /**
- * The home page and category lists show the story's first stored image. That
+ * The home page and section lists show the story's first stored image. That
  * used to be an invisible side effect of media order, so it gets its own card.
  */
 export function CoverSection() {
@@ -23,7 +23,7 @@ export function CoverSection() {
     return (
       <FormSection
         title="Cover"
-        description="Shown on the home page and category lists."
+        description="Shown on the home page and section lists."
       >
         <div className="grid gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
           <ImageDrop createKey={actions.addCover} url="" alt="" />
@@ -39,7 +39,7 @@ export function CoverSection() {
   return (
     <FormSection
       title="Cover"
-      description="Shown on the home page and category lists."
+      description="Shown on the home page and section lists."
     >
       <div className="grid gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
         <ImageDrop

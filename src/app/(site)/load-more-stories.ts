@@ -10,6 +10,7 @@ export async function loadMoreHomeStories(offset: number): Promise<StorySummary[
     limit: HOME_PAGE_SIZE,
     offset: safeOffset,
     sort: "latest",
+    excludeType: "other",
   });
   return stories;
 }

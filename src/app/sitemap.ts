@@ -1,15 +1,12 @@
 import type { MetadataRoute } from "next";
-import { getCategories, getStories, tryGet } from "@/lib/api";
+import { getStories, tryGet } from "@/lib/api";
 import { absoluteUrl } from "@/lib/site";
-import { categoryPath, storyPath } from "@/lib/story-path";
+import { sections, storyPath } from "@/lib/story-path";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [{ data: stories }, { data: categories }] = await Promise.all([
-    tryGet(() => getStories(), []),
-    tryGet(getCategories, []),
-  ]);
+  const { data: stories } = await tryGet(() => getStories(), []);
 
   const staticPages: MetadataRoute.Sitemap = ["/", "/about", "/editorial-policy", "/contact", "/privacy", "/terms"].map(
     (path) => ({
@@ -19,18 +16,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const sectionPages: MetadataRoute.Sitemap = Object.keys(sections).map((section) => ({
+    url: absoluteUrl(`/${section}`),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
   return [
     ...staticPages,
-    ...categories.map((category) => ({
-      url: absoluteUrl(categoryPath(category.name)),
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    })),
-    ...stories.map((story) => ({
-      url: absoluteUrl(storyPath(story.category, story.slug)),
-      lastModified: story.updatedAt ? new Date(story.updatedAt) : undefined,
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    })),
+    ...sectionPages,
+    ...stories.flatMap((story) => {
+      const path = storyPath(story.type, story.slug);
+      if (!path) return [];
+      return [
+        {
+          url: absoluteUrl(path),
+          lastModified: story.updatedAt ? new Date(story.updatedAt) : undefined,
+          changeFrequency: "monthly" as const,
+          priority: 0.8,
+        },
+      ];
+    }),
   ];
 }

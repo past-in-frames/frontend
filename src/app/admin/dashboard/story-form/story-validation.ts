@@ -5,7 +5,6 @@ export const LIMITS = {
   title: 191,
   slug: 191,
   summary: 10000,
-  category: 191,
   text: 20000,
   url: 512,
 } as const;
@@ -70,13 +69,6 @@ export function validateStory(story: StoryInput): FieldErrors {
     errors.summary = "Readers see the summary in listings and search.";
   } else if (story.summary.trim().length > LIMITS.summary) {
     errors.summary = "This summary is too long to store.";
-  }
-
-  const category = story.category.trim();
-  if (!category) {
-    errors.category = "Pick a category — it becomes part of the address.";
-  } else if (category.length > LIMITS.category) {
-    errors.category = `Categories stop at ${LIMITS.category} characters.`;
   }
 
   if (!isCalendarDate(story.eventDate)) {
