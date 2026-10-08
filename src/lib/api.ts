@@ -67,7 +67,7 @@ export function apiOrigin() {
   return API_URL;
 }
 
-async function apiGet<T>(path: string): Promise<T> {
+async function apiFetch(path: string): Promise<Response> {
   let response: Response;
   try {
     response = await fetch(`${API_URL}${path}`, {
@@ -82,23 +82,45 @@ async function apiGet<T>(path: string): Promise<T> {
     throw new ApiError(body?.message ?? `API responded with ${response.status}`, response.status);
   }
 
+  return response;
+}
+
+async function apiGet<T>(path: string): Promise<T> {
+  const response = await apiFetch(path);
   return response.json() as Promise<T>;
 }
 
-/** `sort: "latest"` orders by publish date; the default orders by event date. */
-export function getStories(
-  options: { category?: string; limit?: number; sort?: "latest" } = {},
-) {
+type StoryListOptions = {
+  category?: string;
+  type?: "science" | "history";
+  limit?: number;
+  offset?: number;
+  sort?: "latest";
+};
+
+function storyListPath(options: StoryListOptions) {
   const query = new URLSearchParams();
   if (options.category) query.set("category", options.category);
+  if (options.type) query.set("type", options.type);
   if (options.limit) query.set("limit", String(options.limit));
+  if (options.offset) query.set("offset", String(options.offset));
   if (options.sort) query.set("sort", options.sort);
   const search = query.size > 0 ? `?${query}` : "";
-  return apiGet<StorySummary[]>(`/api/stories${search}`);
+  return `/api/stories${search}`;
 }
 
-export function getStoriesByType(type: "science" | "history") {
-  return apiGet<StorySummary[]>(`/api/stories?type=${type}`);
+/** `sort: "latest"` orders by publish date; the default orders by event date. */
+export async function getStoriesPage(options: StoryListOptions = {}) {
+  const response = await apiFetch(storyListPath(options));
+  const stories = (await response.json()) as StorySummary[];
+  const parsed = Number(response.headers.get("X-Total-Count"));
+  const total = Number.isInteger(parsed) && parsed >= 0 ? parsed : stories.length;
+  return { stories, total };
+}
+
+export async function getStories(options: StoryListOptions = {}) {
+  const { stories } = await getStoriesPage(options);
+  return stories;
 }
 
 export function searchStories(title: string) {

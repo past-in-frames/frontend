@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PageHeader, PageShell } from "@/components/page-header";
 import { StoryGrid } from "@/components/story-card";
-import { getCategories, getStories, getStoriesByType, tryGet } from "@/lib/api";
+import { StoryPagination } from "@/components/story-pagination";
+import { getCategories, getStoriesPage, tryGet } from "@/lib/api";
+import { CATEGORY_PAGE_SIZE, categoryPageHref, parsePageParam } from "@/lib/paging";
 import { absoluteUrl } from "@/lib/site";
 import { categoryLabel, categoryPath, categorySlug, labelFromSlug } from "@/lib/story-path";
 
-type CategoryPageProps = { params: Promise<{ category: string }> };
+type CategoryPageProps = {
+  params: Promise<{ category: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
+};
 
 const sections = {
   science: "Science",
@@ -30,20 +35,22 @@ export async function generateStaticParams() {
   return categories.map((category) => ({ category: categorySlug(category.name) }));
 }
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
+  const { page } = parsePageParam((await searchParams).page);
   const section = sectionFromSlug(category);
   const name = section ? sections[section] : ((await resolveCategory(category)) ?? labelFromSlug(category));
   const label = categoryLabel(name);
+  const path = categoryPath(name);
 
   return {
-    title: label,
+    title: page > 1 ? `${label} — Page ${page}` : label,
     description: `Stories filed under ${label}.`,
-    alternates: { canonical: absoluteUrl(categoryPath(name)) },
+    alternates: { canonical: absoluteUrl(categoryPageHref(path, page)) },
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { category } = await params;
   const section = sectionFromSlug(category);
   const name = section ? sections[section] : await resolveCategory(category);
@@ -51,11 +58,27 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  const path = categoryPath(name);
+  const { page, redirectToFirst } = parsePageParam((await searchParams).page);
+  if (redirectToFirst) {
+    redirect(path);
+  }
+
   const label = categoryLabel(name);
-  const { data: stories, error } = await tryGet(
-    () => (section ? getStoriesByType(section) : getStories({ category: name })),
-    [],
+  const { data, error } = await tryGet(
+    () =>
+      getStoriesPage({
+        ...(section ? { type: section } : { category: name }),
+        limit: CATEGORY_PAGE_SIZE,
+        offset: (page - 1) * CATEGORY_PAGE_SIZE,
+      }),
+    { stories: [], total: 0 },
   );
+
+  const pageCount = data.total === 0 ? 0 : Math.ceil(data.total / CATEGORY_PAGE_SIZE);
+  if (!error && pageCount > 0 && page > pageCount) {
+    redirect(categoryPageHref(path, pageCount));
+  }
 
   return (
     <PageShell>
@@ -63,8 +86,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {error ? (
         <p className="m-0 text-sm text-faded">{error}</p>
       ) : (
-        <StoryGrid stories={stories} empty={`Nothing in ${label} yet.`} />
+        <StoryGrid stories={data.stories} empty={`Nothing in ${label} yet.`} />
       )}
+      {error ? null : <StoryPagination page={page} pageCount={pageCount} path={path} />}
     </PageShell>
   );
 }

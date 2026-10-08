@@ -1,12 +1,9 @@
 import Link from "next/link";
+import { HomeFeed } from "@/app/(site)/home-feed";
 import { PageShell } from "@/components/page-header";
-import { StoryLead, StorySecondary } from "@/components/story-lead";
-import { StoryTimeline } from "@/components/story-timeline";
-import { getCategories, getStories, tryGet, type Category, type StorySummary } from "@/lib/api";
+import { getCategories, getStoriesPage, tryGet, type Category, type StorySummary } from "@/lib/api";
+import { HOME_PAGE_SIZE } from "@/lib/paging";
 import { categoryLabel, categoryPath, eventYear } from "@/lib/story-path";
-
-/** One lead, a two-up, and a timeline. The rest of the archive lives on the category pages. */
-const HOME_STORY_LIMIT = 20;
 
 const todayFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
@@ -15,21 +12,15 @@ const todayFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 export default async function HomePage() {
-  const [{ data: stories, error }, { data: categories }] = await Promise.all([
+  const [{ data: page, error }, { data: categories }] = await Promise.all([
     tryGet(
-      () => getStories({ limit: HOME_STORY_LIMIT, sort: "latest" }),
-      [] as StorySummary[],
+      () => getStoriesPage({ limit: HOME_PAGE_SIZE, sort: "latest" }),
+      { stories: [] as StorySummary[], total: 0 },
     ),
     tryGet(getCategories, [] as Category[]),
   ]);
-
-  // The top of the page is whatever was published most recently; below it the
-  // stories go back in time, which only reads as a timeline when sorted by year.
-  const [lead, ...rest] = stories;
-  const secondary = rest.slice(0, 2);
-  const timeline = rest
-    .slice(2)
-    .toSorted((a, b) => b.eventDate.localeCompare(a.eventDate));
+  const { stories } = page;
+  const lead = stories[0];
 
   return (
     <PageShell>
@@ -51,24 +42,7 @@ export default async function HomePage() {
         <p className="m-0 text-sm text-faded">No stories published yet.</p>
       ) : null}
 
-      {lead ? <StoryLead story={lead} /> : null}
-
-      {secondary.length > 0 ? (
-        <div className="grid gap-7 lg:grid-cols-2 lg:gap-12">
-          {secondary.map((story) => (
-            <StorySecondary key={story.slug} story={story} />
-          ))}
-        </div>
-      ) : null}
-
-      {timeline.length > 0 ? (
-        <section className="flex flex-col gap-3 lg:gap-5">
-          <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">
-            More from this week
-          </h2>
-          <StoryTimeline stories={timeline} />
-        </section>
-      ) : null}
+      {stories.length > 0 ? <HomeFeed initialStories={stories} total={page.total} /> : null}
 
       {categories.length > 0 ? (
         <section className="flex flex-col gap-3 border-t border-ink/12 pt-7 lg:gap-4 lg:pt-10">
