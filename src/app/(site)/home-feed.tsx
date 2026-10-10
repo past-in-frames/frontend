@@ -4,14 +4,17 @@ import { useState, useTransition } from "react";
 import { StoryLead, StorySecondary } from "@/components/story-lead";
 import { StoryTimeline } from "@/components/story-timeline";
 import type { StorySummary } from "@/lib/api";
+import type { StorySort } from "@/lib/story-sort";
 import { loadMoreHomeStories } from "./load-more-stories";
 
 export function HomeFeed({
   initialStories,
   total,
+  sort,
 }: {
   initialStories: StorySummary[];
   total: number;
+  sort: StorySort;
 }) {
   const [stories, setStories] = useState(initialStories);
   const [exhausted, setExhausted] = useState(false);
@@ -20,14 +23,14 @@ export function HomeFeed({
 
   const [lead, ...rest] = stories;
   const secondary = rest.slice(0, 2);
-  const timeline = rest.slice(2).toSorted((a, b) => b.eventDate.localeCompare(a.eventDate));
+  const timeline = rest.slice(2);
   const hasMore = !exhausted && stories.length < total;
 
   function onLoadMore() {
     setError(null);
     startTransition(async () => {
       try {
-        const next = await loadMoreHomeStories(stories.length);
+        const next = await loadMoreHomeStories(stories.length, sort);
         const seen = new Set(stories.map((story) => story.slug));
         const fresh = next.filter((story) => !seen.has(story.slug));
         if (fresh.length === 0) {

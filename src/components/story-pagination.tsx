@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pageHref } from "@/lib/paging";
+import { DEFAULT_STORY_SORT, type StorySort } from "@/lib/story-sort";
 
 /** Enough room for the current page and two neighbors, without a long run of numbers. */
 function visiblePages(page: number, pageCount: number) {
@@ -15,24 +16,27 @@ export function StoryPagination({
   page,
   pageCount,
   path,
+  sort = DEFAULT_STORY_SORT,
 }: {
   page: number;
   pageCount: number;
   path: string;
+  sort?: StorySort;
 }) {
   if (pageCount <= 1) return null;
 
   const pages = visiblePages(page, pageCount);
+  const href = (number: number) => pageHref(path, number, sort);
 
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-2">
-      <PageLink href={page > 1 ? pageHref(path, page - 1) : undefined}>Previous</PageLink>
+      <PageLink href={page > 1 ? href(page - 1) : undefined}>Previous</PageLink>
       {pages.map((number) => (
-        <PageLink key={number} href={pageHref(path, number)} current={number === page}>
+        <PageLink key={number} href={href(number)} current={number === page}>
           {number}
         </PageLink>
       ))}
-      <PageLink href={page < pageCount ? pageHref(path, page + 1) : undefined}>Next</PageLink>
+      <PageLink href={page < pageCount ? href(page + 1) : undefined}>Next</PageLink>
     </nav>
   );
 }

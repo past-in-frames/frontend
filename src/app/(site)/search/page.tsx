@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader, PageShell } from "@/components/page-header";
 import { StoryGrid } from "@/components/story-card";
+import { StorySortBar } from "@/components/story-sort-bar";
 import { searchStories, tryGet } from "@/lib/api";
+import { parseStorySort, type StorySort } from "@/lib/story-sort";
 
 type SearchPageProps = {
-  searchParams: Promise<{ q?: string | string[] }>;
+  searchParams: Promise<{ q?: string | string[]; sort?: string | string[] }>;
 };
 
 function searchQuery(value: string | string[] | undefined) {
@@ -24,7 +26,9 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const q = searchQuery((await searchParams).q);
+  const query = await searchParams;
+  const q = searchQuery(query.q);
+  const sort = parseStorySort(query.sort);
 
   if (!q) {
     return (
@@ -36,16 +40,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <PageShell>
-      <PageHeader title="Search" lede={`Stories with “${q}” in the title.`} />
-      <Suspense key={q} fallback={<p className="m-0 text-sm text-faded">Loading stories…</p>}>
-        <SearchResults q={q} />
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <PageHeader title="Search" lede={`Stories with “${q}” in the title.`} />
+        <StorySortBar path="/search" sort={sort} query={q} />
+      </div>
+      <Suspense key={`${q}:${sort}`} fallback={<p className="m-0 text-sm text-faded">Loading stories…</p>}>
+        <SearchResults q={q} sort={sort} />
       </Suspense>
     </PageShell>
   );
 }
 
-async function SearchResults({ q }: { q: string }) {
-  const { data: stories, error } = await tryGet(() => searchStories(q), []);
+async function SearchResults({ q, sort }: { q: string; sort: StorySort }) {
+  const { data: stories, error } = await tryGet(() => searchStories(q, sort), []);
 
   if (error) {
     return <p className="m-0 text-sm text-faded">{error}</p>;

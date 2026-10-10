@@ -1,8 +1,14 @@
 import { HomeFeed } from "@/app/(site)/home-feed";
 import { PageShell } from "@/components/page-header";
+import { StorySortBar } from "@/components/story-sort-bar";
 import { getStoriesPage, tryGet, type StorySummary } from "@/lib/api";
 import { HOME_PAGE_SIZE } from "@/lib/paging";
 import { eventYear } from "@/lib/story-path";
+import { parseStorySort } from "@/lib/story-sort";
+
+type HomePageProps = {
+  searchParams: Promise<{ sort?: string | string[] }>;
+};
 
 const todayFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
@@ -10,9 +16,10 @@ const todayFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
 });
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const sort = parseStorySort((await searchParams).sort);
   const { data: page, error } = await tryGet(
-    () => getStoriesPage({ limit: HOME_PAGE_SIZE, sort: "latest", excludeType: "other" }),
+    () => getStoriesPage({ limit: HOME_PAGE_SIZE, sort, excludeType: "other" }),
     { stories: [] as StorySummary[], total: 0 },
   );
   const { stories } = page;
@@ -33,12 +40,16 @@ export default async function HomePage() {
         </p>
       </header>
 
+      <StorySortBar path="/" sort={sort} />
+
       {error ? <p className="m-0 text-sm text-faded">{error}</p> : null}
       {!error && !lead ? (
         <p className="m-0 text-sm text-faded">No stories published yet.</p>
       ) : null}
 
-      {stories.length > 0 ? <HomeFeed initialStories={stories} total={page.total} /> : null}
+      {stories.length > 0 ? (
+        <HomeFeed key={sort} initialStories={stories} total={page.total} sort={sort} />
+      ) : null}
     </PageShell>
   );
 }

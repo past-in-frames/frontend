@@ -1,5 +1,7 @@
 import "server-only";
 
+import { DEFAULT_STORY_SORT } from "@/lib/story-sort";
+
 const API_URL = (process.env.API_URL ?? "http://localhost:3023").replace(/\/+$/, "");
 
 /**
@@ -93,7 +95,8 @@ type StoryListOptions = {
   excludeType?: "other";
   limit?: number;
   offset?: number;
-  sort?: "latest";
+  /** `month-day-desc` is the default and is left off the query. */
+  sort?: "latest" | "year" | "year-asc" | "month-day" | "month-day-desc";
 };
 
 function storyListPath(options: StoryListOptions) {
@@ -102,12 +105,15 @@ function storyListPath(options: StoryListOptions) {
   if (options.excludeType) query.set("exclude", options.excludeType);
   if (options.limit) query.set("limit", String(options.limit));
   if (options.offset) query.set("offset", String(options.offset));
-  if (options.sort) query.set("sort", options.sort);
+  if (options.sort && options.sort !== DEFAULT_STORY_SORT) query.set("sort", options.sort);
   const search = query.size > 0 ? `?${query}` : "";
   return `/api/stories${search}`;
 }
 
-/** `sort: "latest"` orders by publish date; the default orders by event date. */
+/**
+ * `sort: "latest"` orders by publish date. The default groups the same calendar
+ * day and runs December first. `year` orders by the event year instead.
+ */
 export async function getStoriesPage(options: StoryListOptions = {}) {
   const response = await apiFetch(storyListPath(options));
   const stories = (await response.json()) as StorySummary[];
@@ -121,8 +127,13 @@ export async function getStories(options: StoryListOptions = {}) {
   return stories;
 }
 
-export function searchStories(title: string) {
-  return apiGet<StorySummary[]>(`/api/stories?q=${encodeURIComponent(title)}`);
+export function searchStories(
+  title: string,
+  sort?: "year" | "year-asc" | "month-day" | "month-day-desc",
+) {
+  const query = new URLSearchParams({ q: title });
+  if (sort && sort !== DEFAULT_STORY_SORT) query.set("sort", sort);
+  return apiGet<StorySummary[]>(`/api/stories?${query}`);
 }
 
 export function getStory(slug: string) {

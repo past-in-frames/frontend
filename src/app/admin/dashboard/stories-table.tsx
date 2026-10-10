@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { StorySortBar } from "@/components/story-sort-bar";
 import { sectionLabel } from "@/lib/story-path";
+import { compareStoriesBySort, DEFAULT_STORY_SORT, type StorySort } from "@/lib/story-sort";
 
 export type AdminStory = {
   slug: string;
@@ -17,18 +19,21 @@ export type AdminStory = {
 export function StoriesTable({ stories }: { stories: AdminStory[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<StorySort>(DEFAULT_STORY_SORT);
   const [actionError, setActionError] = useState("");
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
   const normalized = query.trim().toLowerCase();
   const visible = useMemo(() => {
-    if (!normalized) return stories;
-    return stories.filter((story) =>
-      [story.title, story.summary, story.slug, story.type, story.status, story.eventDate, formatEventDate(story.eventDate)]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalized),
-    );
-  }, [normalized, stories]);
+    const filtered = normalized
+      ? stories.filter((story) =>
+          [story.title, story.summary, story.slug, story.type, story.status, story.eventDate, formatEventDate(story.eventDate)]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalized),
+        )
+      : stories;
+    return filtered.toSorted((a, b) => compareStoriesBySort(a, b, sort));
+  }, [normalized, sort, stories]);
 
   async function onDelete(story: AdminStory) {
     if (pendingSlug) return;
@@ -67,12 +72,15 @@ export function StoriesTable({ stories }: { stories: AdminStory[] }) {
           aria-label="Search stories"
           className="h-11 w-full max-w-md rounded-[10px] border border-ink/20 bg-white px-4 font-sans text-[15px] outline-none"
         />
-        <Link
-          href="/admin/dashboard/new"
-          className="inline-flex h-11 items-center rounded-[10px] bg-accent-2 px-5 text-sm font-semibold text-white"
-        >
-          New story
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <StorySortBar sort={sort} onSort={setSort} />
+          <Link
+            href="/admin/dashboard/new"
+            className="inline-flex h-11 items-center rounded-[10px] bg-accent-2 px-5 text-sm font-semibold text-white"
+          >
+            New story
+          </Link>
+        </div>
       </div>
       {actionError ? (
         <p className="m-0 text-sm text-rust" role="alert">
