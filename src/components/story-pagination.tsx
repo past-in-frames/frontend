@@ -17,16 +17,22 @@ export function StoryPagination({
   pageCount,
   path,
   sort = DEFAULT_STORY_SORT,
+  from,
+  to,
+  today,
 }: {
   page: number;
   pageCount: number;
   path: string;
   sort?: StorySort;
+  from?: string;
+  to?: string;
+  today?: string;
 }) {
   if (pageCount <= 1) return null;
 
   const pages = visiblePages(page, pageCount);
-  const href = (number: number) => pageHref(path, number, sort);
+  const href = (number: number) => pageHref(path, number, sort, { from, to, today });
 
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-2">

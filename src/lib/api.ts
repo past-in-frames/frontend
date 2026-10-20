@@ -95,8 +95,11 @@ type StoryListOptions = {
   excludeType?: "other";
   limit?: number;
   offset?: number;
-  /** `month-day-desc` is the default and is left off the query. */
+  /** `year` (newest event first) is the default and is left off the query. */
   sort?: "latest" | "year" | "year-asc" | "month-day" | "month-day-desc";
+  /** Inclusive calendar days, `YYYY-MM-DD`. */
+  from?: string;
+  to?: string;
 };
 
 function storyListPath(options: StoryListOptions) {
@@ -106,13 +109,15 @@ function storyListPath(options: StoryListOptions) {
   if (options.limit) query.set("limit", String(options.limit));
   if (options.offset) query.set("offset", String(options.offset));
   if (options.sort && options.sort !== DEFAULT_STORY_SORT) query.set("sort", options.sort);
+  if (options.from) query.set("from", options.from);
+  if (options.to) query.set("to", options.to);
   const search = query.size > 0 ? `?${query}` : "";
   return `/api/stories${search}`;
 }
 
 /**
- * `sort: "latest"` orders by publish date. The default groups the same calendar
- * day and runs December first. `year` orders by the event year instead.
+ * `sort: "latest"` orders by publish date. The default orders by the event
+ * date, newest first. `from` and `to` are inclusive calendar days.
  */
 export async function getStoriesPage(options: StoryListOptions = {}) {
   const response = await apiFetch(storyListPath(options));
@@ -130,9 +135,12 @@ export async function getStories(options: StoryListOptions = {}) {
 export function searchStories(
   title: string,
   sort?: "year" | "year-asc" | "month-day" | "month-day-desc",
+  dates?: { from?: string; to?: string },
 ) {
   const query = new URLSearchParams({ q: title });
   if (sort && sort !== DEFAULT_STORY_SORT) query.set("sort", sort);
+  if (dates?.from) query.set("from", dates.from);
+  if (dates?.to) query.set("to", dates.to);
   return apiGet<StorySummary[]>(`/api/stories?${query}`);
 }
 

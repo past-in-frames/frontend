@@ -2,8 +2,8 @@ export const STORY_SORTS = ["year", "year-asc", "month-day", "month-day-desc"] a
 
 export type StorySort = (typeof STORY_SORTS)[number];
 
-/** December first, same calendar day together. The address stays clean until a reader picks something else. */
-export const DEFAULT_STORY_SORT: StorySort = "month-day-desc";
+/** Newest event first. The address stays clean until a reader picks something else. */
+export const DEFAULT_STORY_SORT: StorySort = "year";
 
 export function parseStorySort(value: string | string[] | undefined): StorySort {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -40,14 +40,17 @@ export function sortDirectionLabel(sort: StorySort) {
   }
 }
 
-/** Keeps search and pagination on the same order when the reader moves between pages. */
+/** Keeps search, the date window, and pagination on the same order between pages. */
 export function storySortHref(
   path: string,
   sort: StorySort,
-  options?: { page?: number; query?: string },
+  options?: { page?: number; query?: string; from?: string; to?: string; today?: string },
 ) {
   const params = new URLSearchParams();
   if (options?.query) params.set("q", options.query);
+  if (options?.from) params.set("from", options.from);
+  // Today with no floor is the default window, so it stays off the address.
+  if (options?.to && (options.from || options.to !== options.today)) params.set("to", options.to);
   if (sort !== DEFAULT_STORY_SORT) params.set("sort", sort);
   if (options?.page && options.page > 1) params.set("page", String(options.page));
   const search = params.toString();

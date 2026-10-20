@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  DEFAULT_STORY_SORT,
   flipStorySort,
   sortDirectionLabel,
   storySortHref,
@@ -14,18 +13,24 @@ export function StorySortBar({
   sort,
   path = "/",
   query,
+  from,
+  to,
+  today,
   onSort,
 }: {
   sort: StorySort;
   path?: string;
   query?: string;
+  from?: string;
+  to?: string;
+  today?: string;
   onSort?: (sort: StorySort) => void;
 }) {
   const mode = storySortMode(sort);
   const direction = sortDirectionLabel(sort);
 
   function hrefFor(next: StorySort) {
-    return storySortHref(path, next, { query });
+    return storySortHref(path, next, { query, from, to, today });
   }
 
   return (
@@ -41,8 +46,8 @@ export function StorySortBar({
         </SortChoice>
         <SortChoice
           current={mode === "month-day"}
-          href={onSort ? undefined : hrefFor(mode === "month-day" ? sort : DEFAULT_STORY_SORT)}
-          onClick={onSort ? () => onSort(mode === "month-day" ? sort : DEFAULT_STORY_SORT) : undefined}
+          href={onSort ? undefined : hrefFor(mode === "month-day" ? sort : "month-day-desc")}
+          onClick={onSort ? () => onSort(mode === "month-day" ? sort : "month-day-desc") : undefined}
         >
           Day & month
         </SortChoice>

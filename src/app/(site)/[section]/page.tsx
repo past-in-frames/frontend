@@ -2,17 +2,24 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { PageHeader, PageShell } from "@/components/page-header";
 import { StoryGrid } from "@/components/story-card";
+import { StoryDateFilter } from "@/components/story-date-filter";
 import { StoryPagination } from "@/components/story-pagination";
 import { StorySortBar } from "@/components/story-sort-bar";
 import { getStoriesPage, tryGet } from "@/lib/api";
 import { CATEGORY_PAGE_SIZE, pageHref, parsePageParam } from "@/lib/paging";
 import { absoluteUrl } from "@/lib/site";
+import { parseStoryDates, resolveStoryWindow, todayIso } from "@/lib/story-dates";
 import { sectionFromPath, sections, type SectionPath } from "@/lib/story-path";
 import { DEFAULT_STORY_SORT, parseStorySort } from "@/lib/story-sort";
 
 type SectionPageProps = {
   params: Promise<{ section: string }>;
-  searchParams: Promise<{ page?: string | string[]; sort?: string | string[] }>;
+  searchParams: Promise<{
+    page?: string | string[];
+    sort?: string | string[];
+    from?: string | string[];
+    to?: string | string[];
+  }>;
 };
 
 function resolveSection(param: string): SectionPath | null {
@@ -33,14 +40,20 @@ export async function generateMetadata({ params, searchParams }: SectionPageProp
   const query = await searchParams;
   const { page } = parsePageParam(query.page);
   const sort = parseStorySort(query.sort);
+  const dates = parseStoryDates(query);
+  const today = todayIso();
+  const storyWindow = resolveStoryWindow(dates, today);
   const label = sections[section].label;
   const path = `/${section}`;
+  const custom = sort !== DEFAULT_STORY_SORT || Boolean(dates.from || dates.to);
 
   return {
     title: page > 1 ? `${label} — Page ${page}` : label,
     description: `Stories filed under ${label}.`,
-    alternates: { canonical: absoluteUrl(pageHref(path, page, sort)) },
-    ...(sort === DEFAULT_STORY_SORT ? {} : { robots: { index: false, follow: true } }),
+    alternates: {
+      canonical: absoluteUrl(pageHref(path, page, sort, { ...storyWindow, today })),
+    },
+    ...(custom ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -59,8 +72,12 @@ export default async function SectionPage({ params, searchParams }: SectionPageP
   const query = await searchParams;
   const { page, redirectToFirst } = parsePageParam(query.page);
   const sort = parseStorySort(query.sort);
+  const today = todayIso();
+  const dates = parseStoryDates(query);
+  const storyWindow = resolveStoryWindow(dates, today);
+  const dateHref = { from: storyWindow.from, to: storyWindow.to, today };
   if (redirectToFirst) {
-    redirect(pageHref(path, 1, sort));
+    redirect(pageHref(path, 1, sort, dateHref));
   }
 
   const label = sections[section].label;
@@ -71,27 +88,47 @@ export default async function SectionPage({ params, searchParams }: SectionPageP
         limit: CATEGORY_PAGE_SIZE,
         offset: (page - 1) * CATEGORY_PAGE_SIZE,
         sort,
+        from: storyWindow.from,
+        to: storyWindow.to,
       }),
     { stories: [], total: 0 },
   );
 
   const pageCount = data.total === 0 ? 0 : Math.ceil(data.total / CATEGORY_PAGE_SIZE);
   if (!error && pageCount > 0 && page > pageCount) {
-    redirect(pageHref(path, pageCount, sort));
+    redirect(pageHref(path, pageCount, sort, dateHref));
   }
+
+  const filtered = Boolean(dates.from || dates.to);
 
   return (
     <PageShell>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <PageHeader title={label} lede={`Stories filed under ${label}.`} />
-        <StorySortBar path={path} sort={sort} />
+        <div className="flex flex-wrap items-center gap-3">
+          <StoryDateFilter path={path} sort={sort} from={dates.from} to={dates.to} today={today} />
+          <StorySortBar path={path} sort={sort} from={storyWindow.from} to={storyWindow.to} today={today} />
+        </div>
       </div>
       {error ? (
         <p className="m-0 text-sm text-faded">{error}</p>
       ) : (
-        <StoryGrid stories={data.stories} empty={`Nothing in ${label} yet.`} />
+        <StoryGrid
+          stories={data.stories}
+          empty={filtered ? `Nothing in ${label} for this range.` : `Nothing in ${label} yet.`}
+        />
       )}
-      {error ? null : <StoryPagination page={page} pageCount={pageCount} path={path} sort={sort} />}
+      {error ? null : (
+        <StoryPagination
+          page={page}
+          pageCount={pageCount}
+          path={path}
+          sort={sort}
+          from={storyWindow.from}
+          to={storyWindow.to}
+          today={today}
+        />
+      )}
     </PageShell>
   );
 }

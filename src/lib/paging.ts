@@ -3,9 +3,14 @@ import { DEFAULT_STORY_SORT, storySortHref, type StorySort } from "@/lib/story-s
 export const HOME_PAGE_SIZE = 20;
 export const CATEGORY_PAGE_SIZE = 12;
 
-/** Page 1 keeps the clean section URL; later pages add `?page=`, and a non-default sort stays with them. */
-export function pageHref(path: string, page: number, sort: StorySort = DEFAULT_STORY_SORT) {
-  return storySortHref(path, sort, { page });
+/** Page 1 keeps the clean section URL; later pages add `?page=`, and a non-default sort or date window stays with them. */
+export function pageHref(
+  path: string,
+  page: number,
+  sort: StorySort = DEFAULT_STORY_SORT,
+  dates?: { from?: string; to?: string; today?: string },
+) {
+  return storySortHref(path, sort, { page, ...dates });
 }
 
 /**

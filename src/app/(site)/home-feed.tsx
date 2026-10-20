@@ -11,10 +11,14 @@ export function HomeFeed({
   initialStories,
   total,
   sort,
+  from,
+  to,
 }: {
   initialStories: StorySummary[];
   total: number;
   sort: StorySort;
+  from?: string;
+  to?: string;
 }) {
   const [stories, setStories] = useState(initialStories);
   const [exhausted, setExhausted] = useState(false);
@@ -30,7 +34,7 @@ export function HomeFeed({
     setError(null);
     startTransition(async () => {
       try {
-        const next = await loadMoreHomeStories(stories.length, sort);
+        const next = await loadMoreHomeStories(stories.length, sort, { from, to });
         const seen = new Set(stories.map((story) => story.slug));
         const fresh = next.filter((story) => !seen.has(story.slug));
         if (fresh.length === 0) {
@@ -62,7 +66,7 @@ export function HomeFeed({
 
       {timeline.length > 0 ? (
         <section className="flex flex-col gap-3 lg:gap-5">
-          <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">More from this week</h2>
+          <h2 className="m-0 font-serif text-xl font-semibold lg:text-[26px]">More stories</h2>
           <StoryTimeline stories={timeline} />
         </section>
       ) : null}
