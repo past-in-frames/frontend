@@ -3,8 +3,12 @@ import { getSitemapData } from "@/lib/api";
 import { absoluteUrl } from "@/lib/site";
 import { sectionFromType, storyPath } from "@/lib/story-path";
 
-/** Rebuilt at most once an hour; the API response behind it is cached for five minutes. */
-export const revalidate = 3600;
+/**
+ * Built when it is requested, never while the site is built: a build must not
+ * depend on the API being up, or on it already running the newest version. The
+ * API response behind it is cached for five minutes.
+ */
+export const dynamic = "force-dynamic";
 
 type Entry = MetadataRoute.Sitemap[number];
 
