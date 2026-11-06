@@ -6,25 +6,28 @@ import { organizationJsonLd } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
 import "./globals.css";
 
+/**
+ * Source Serif 4 and Source Sans 3 are variable fonts, so one file per script covers
+ * every weight; listing weights or an italic would download a file for each.
+ * Italic text (the "Illustration" label) is drawn slanted by the browser instead.
+ */
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
+/** Not variable, so only the two weights the design uses: semibold and bold. */
 const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
