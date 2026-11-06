@@ -126,7 +126,6 @@ type StoryListOptions = {
   photoStory?: boolean;
   /** Only stories that carry a video. */
   video?: boolean;
-  excludeType?: "other";
   limit?: number;
   offset?: number;
   /** `year` (newest event first) is the default and is left off the query. */
@@ -139,7 +138,6 @@ type StoryListOptions = {
 function storyListPath(options: StoryListOptions) {
   const query = new URLSearchParams();
   if (options.type) query.set("type", options.type);
-  if (options.excludeType) query.set("exclude", options.excludeType);
   if (options.topic) query.set("topic", options.topic);
   if (options.photoStory) query.set("photoStory", "true");
   if (options.video) query.set("video", "true");
@@ -205,6 +203,18 @@ export type SitemapData = {
 /** Everything the sitemap lists. Throws when the API is down, so crawlers never see a half-empty sitemap. */
 export function getSitemapData() {
   return apiGet<SitemapData>("/api/sitemap");
+}
+
+/** For every story type, its stories nearest to one calendar day (the day itself first). */
+export function getDaySections(month: number, day: number, scope: string, per = 8) {
+  const query = new URLSearchParams({ month: String(month), day: String(day), scope, per: String(per) });
+  return apiGet<{ sections: Record<string, StorySummary[]> }>(`/api/on-this-day/sections?${query}`);
+}
+
+/** The Shorts whose stories are nearest to one calendar day. */
+export function getDayShorts(month: number, day: number, scope: string, limit = 4) {
+  const query = new URLSearchParams({ month: String(month), day: String(day), scope, limit: String(limit) });
+  return apiGet<StorySummary[]>(`/api/on-this-day/shorts?${query}`);
 }
 
 /** Calendar days (`MM-DD`) with at least one published story. */

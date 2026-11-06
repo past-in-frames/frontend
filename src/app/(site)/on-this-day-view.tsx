@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BirthdayForm } from "@/components/home/birthday-form";
+import { AiShorts } from "@/components/home/ai-shorts";
 import { ArchiveBar } from "@/components/home/archive-bar";
 import { DayStrip } from "@/components/home/day-strip";
 import { SectionShelves } from "@/components/home/section-shelves";
@@ -11,6 +12,8 @@ import { PageShell } from "@/components/page-header";
 import { Cover, Eyebrow, rustButtonClass, SectionHeading } from "@/components/ui";
 import {
   getCollections,
+  getDaySections,
+  getDayShorts,
   getOnThisDay,
   getStories,
   tryGet,
@@ -43,11 +46,14 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
   const today = monthDayFromIso(todayIso());
   const empty: OnThisDay = { month: date.month, day: date.day, featured: null, also: [], week: [] };
 
-  const [day, photo, collections, watch] = await Promise.all([
+  const [day, photo, collections, watch, daySections, dayShorts] = await Promise.all([
     tryGet(() => getOnThisDay(date.month, date.day, scope), empty),
     tryGet(() => getStories({ photoStory: true, limit: 1, sort: "latest" }), [] as StorySummary[]),
     tryGet(() => getCollections(3), [] as CollectionSummary[]),
     tryGet(() => getStories({ video: true, limit: 8, sort: "latest" }), [] as StorySummary[]),
+    // The blocks below follow the chosen day and filter, so they are asked for with both.
+    tryGet(() => getDaySections(date.month, date.day, scope), { sections: {} as Record<string, StorySummary[]> }),
+    tryGet(() => getDayShorts(date.month, date.day, scope), [] as StorySummary[]),
   ]);
 
   const { featured, also, week } = day.data;
@@ -147,7 +153,7 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
       {week.length > 0 ? (
         <section className="flex flex-col gap-5" aria-labelledby="week-heading">
           <SectionHeading id="week-heading">This Week in History</SectionHeading>
-          <ul className="m-0 grid list-none grid-cols-2 gap-x-4 gap-y-6 p-0 sm:grid-cols-3">
+          <ul className="m-0 grid list-none grid-cols-2 gap-x-4 gap-y-6 p-0 md:grid-cols-4">
             {week.map((story) => (
               <li key={story.slug}>
                 <Link href={storyPath(story.type, story.slug) ?? "/"} className="mi-card flex flex-col gap-3">
@@ -157,7 +163,12 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
                     sizes="(min-width: 1200px) 370px, (min-width: 640px) 33vw, 50vw"
                     aspect="aspect-[1.1/1]"
                   />
-                  <h3 className="mi-card-title m-0 font-serif text-[19px] leading-[1.2] font-bold sm:text-[22px]">
+                  <p className="m-0 font-mono text-xs font-semibold tracking-[0.1em] text-faded uppercase">
+                    {shortMonthDay({ month: Number(story.eventDate.slice(5, 7)), day: Number(story.eventDate.slice(8, 10)) })}
+                    {" · "}
+                    <span className="text-rust">{eventYear(story.eventDate)}</span>
+                  </p>
+                  <h3 className="mi-card-title m-0 -mt-1 font-serif text-[19px] leading-[1.2] font-bold sm:text-[22px]">
                     {story.title}
                   </h3>
                 </Link>
@@ -167,7 +178,9 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
         </section>
       ) : null}
 
-      <SectionShelves />
+      <AiShorts stories={dayShorts.data} />
+
+      <SectionShelves byType={daySections.data.sections} />
 
       {photo.data[0] ? <PhotoStory story={photo.data[0]} /> : null}
 

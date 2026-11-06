@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { PlayBadge } from "@/components/icons";
 
 /**
@@ -15,6 +15,7 @@ export function VideoPlayer({
   sizes = "(min-width: 1200px) 520px, (min-width: 768px) 45vw, 100vw",
   vertical = false,
   className = "",
+  children,
 }: {
   videoId: string;
   title: string;
@@ -22,6 +23,8 @@ export function VideoPlayer({
   /** A Short: shown upright at 9:16 with its own portrait thumbnail. */
   vertical?: boolean;
   className?: string;
+  /** Drawn over the thumbnail, under the play button, until the video starts. */
+  children?: ReactNode;
 }) {
   const [playing, setPlaying] = useState(false);
   // Not every video has the best thumbnail, so fall back to the next one, ending with the one that always exists.
@@ -54,6 +57,7 @@ export function VideoPlayer({
             className="object-cover"
             onError={() => setThumbIndex((index) => Math.min(index + 1, thumbs.length - 1))}
           />
+          {children}
           <span className="absolute inset-0 flex items-center justify-center transition-transform group-hover:scale-110">
             <PlayBadge size={vertical ? 48 : 56} />
           </span>
