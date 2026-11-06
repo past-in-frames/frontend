@@ -7,7 +7,7 @@ import { StoryPagination } from "@/components/story-pagination";
 import { StorySortBar } from "@/components/story-sort-bar";
 import { getStoriesPage, tryGet } from "@/lib/api";
 import { CATEGORY_PAGE_SIZE, pageHref, parsePageParam } from "@/lib/paging";
-import { absoluteUrl } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 import { parseStoryDates, resolveStoryWindow, todayIso } from "@/lib/story-dates";
 import { sectionFromPath, sections, type SectionPath } from "@/lib/story-path";
 import { DEFAULT_STORY_SORT, parseStorySort } from "@/lib/story-sort";
@@ -22,6 +22,28 @@ type SectionPageProps = {
   }>;
 };
 
+/** What each section is about, in the words a searcher would use. */
+const SECTION_SEO: Record<SectionPath, { title: string; heading: string; description: string }> = {
+  science: {
+    title: "Science and Space Stories",
+    heading: "Science and Space Stories",
+    description:
+      "Science and space history: discoveries, missions and experiments, told in short, well-sourced stories with the sources left in plain sight.",
+  },
+  history: {
+    title: "History Stories",
+    heading: "History Stories",
+    description:
+      "History stories about wars, treaties, inventions and turning points, one date at a time, each short and each with sources you can check.",
+  },
+  others: {
+    title: "Miscellaneous and Interesting Stories",
+    heading: "Miscellaneous & Interesting Stories",
+    description:
+      "Mysteries, trials, curiosities and the unexplained from history, written plainly and with sources, so you can tell what is known from what is legend.",
+  },
+};
+
 function resolveSection(param: string): SectionPath | null {
   if (param === "other") return "others";
   return sectionFromPath(param);
@@ -34,7 +56,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params, searchParams }: SectionPageProps): Promise<Metadata> {
   const section = resolveSection((await params).section);
   if (!section) {
-    return { title: "Not found" };
+    return { title: "Not found", robots: { index: false } };
   }
 
   const query = await searchParams;
@@ -43,18 +65,15 @@ export async function generateMetadata({ params, searchParams }: SectionPageProp
   const dates = parseStoryDates(query);
   const today = todayIso();
   const storyWindow = resolveStoryWindow(dates, today);
-  const label = sections[section].label;
-  const path = `/${section}`;
+  const seo = SECTION_SEO[section];
   const custom = sort !== DEFAULT_STORY_SORT || Boolean(dates.from || dates.to);
 
-  return {
-    title: page > 1 ? `${label} — Page ${page}` : label,
-    description: `Stories filed under ${label}.`,
-    alternates: {
-      canonical: absoluteUrl(pageHref(path, page, sort, { ...storyWindow, today })),
-    },
-    ...(custom ? { robots: { index: false, follow: true } } : {}),
-  };
+  return pageMetadata({
+    title: page > 1 ? `${seo.title} — Page ${page}` : seo.title,
+    description: seo.description,
+    path: pageHref(`/${section}`, page, sort, { ...storyWindow, today }),
+    noindex: custom,
+  });
 }
 
 export default async function SectionPage({ params, searchParams }: SectionPageProps) {
@@ -104,7 +123,7 @@ export default async function SectionPage({ params, searchParams }: SectionPageP
   return (
     <PageShell>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <PageHeader title={label} lede={`Stories filed under ${label}.`} />
+        <PageHeader title={SECTION_SEO[section].heading} lede={SECTION_SEO[section].description} />
         <div className="flex flex-wrap items-center gap-3">
           <StoryDateFilter path={path} sort={sort} from={dates.from} to={dates.to} today={today} />
           <StorySortBar path={path} sort={sort} from={storyWindow.from} to={storyWindow.to} today={today} />

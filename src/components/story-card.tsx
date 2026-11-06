@@ -7,7 +7,18 @@ import { eventYear, formatEventDate, sectionLabel, storyPath } from "@/lib/story
 /** Three across on desktop, so the browser only needs a third of the viewport. */
 const CARD_SIZES = "(min-width: 1024px) 33vw, 100vw";
 
-export function StoryCard({ story, eager = false }: { story: StorySummary; eager?: boolean }) {
+type HeadingLevel = "h2" | "h3";
+
+/** `h2` when the cards sit directly under the page title, `h3` under a section heading. */
+export function StoryCard({
+  story,
+  eager = false,
+  headingLevel: Heading = "h2",
+}: {
+  story: StorySummary;
+  eager?: boolean;
+  headingLevel?: HeadingLevel;
+}) {
   const label = sectionLabel(story.type);
   return (
     <Link href={storyPath(story.type, story.slug) ?? "/"} className="mi-card flex flex-col gap-3">
@@ -39,14 +50,22 @@ export function StoryCard({ story, eager = false }: { story: StorySummary; eager
         <span className="font-mono text-xs font-semibold tracking-[0.1em] text-rust uppercase">
           {[eventYear(story.eventDate), label].filter(Boolean).join(" · ")}
         </span>
-        <span className="mi-card-title font-serif text-[22px] leading-[1.2] font-bold">{story.title}</span>
+        <Heading className="mi-card-title m-0 font-serif text-[22px] leading-[1.2] font-bold">{story.title}</Heading>
         <span className="text-[13px] text-faded">{formatEventDate(story.eventDate)}</span>
       </div>
     </Link>
   );
 }
 
-export function StoryGrid({ stories, empty }: { stories: StorySummary[]; empty: string }) {
+export function StoryGrid({
+  stories,
+  empty,
+  headingLevel,
+}: {
+  stories: StorySummary[];
+  empty: string;
+  headingLevel?: HeadingLevel;
+}) {
   if (stories.length === 0) {
     return <p className="m-0 text-sm text-faded">{empty}</p>;
   }
@@ -55,7 +74,7 @@ export function StoryGrid({ stories, empty }: { stories: StorySummary[]; empty: 
     <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-3 lg:gap-7">
       {/* The first row is above the fold, so it should not wait on lazy loading. */}
       {stories.map((story, index) => (
-        <StoryCard key={story.slug} story={story} eager={index < 3} />
+        <StoryCard key={story.slug} story={story} eager={index < 3} headingLevel={headingLevel} />
       ))}
     </div>
   );

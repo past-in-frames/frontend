@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { StoryArticle } from "@/components/story-article";
 import { ApiError, getStories, getStory, tryGet, type Story } from "@/lib/api";
+import { JsonLd } from "@/components/json-ld";
+import { breadcrumbJsonLd, organizationJsonLd, pageMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
-import { sectionFromType, sectionLabel, storyPath } from "@/lib/story-path";
+import { eventYear, formatEventDate, sectionFromType, sectionLabel, sections, storyPath } from "@/lib/story-path";
 
 type StoryPageProps = { params: Promise<{ section: string; slug: string }> };
 
@@ -41,32 +43,28 @@ export async function generateMetadata({ params }: StoryPageProps): Promise<Meta
   const { section, slug } = await params;
   const story = await loadStory(section, slug);
   if (!story) {
-    return { title: "Story not found" };
+    return { title: "Story not found", robots: { index: false } };
   }
 
-  const url = absoluteUrl(storyPath(story.type, story.slug) ?? "/");
-  const cover = story.media.find((item) => item.type === "image" && item.url)?.url ?? undefined;
-
-  return {
+  const cover = story.media.find((item) => item.type === "image" && item.url);
+  const meta = pageMetadata({
     title: story.title,
     description: story.summary,
-    alternates: { canonical: url },
+    path: storyPath(story.type, story.slug) ?? "/",
+    type: "article",
+    image: cover?.url ? { url: cover.url, alt: cover.altText ?? story.title } : undefined,
+  });
+
+  return {
+    ...meta,
     openGraph: {
+      ...meta.openGraph,
       type: "article",
-      url,
-      title: story.title,
-      description: story.summary,
-      siteName: site.name,
       publishedTime: story.publishedAt ?? undefined,
       modifiedTime: story.updatedAt,
-      images: cover ? [{ url: cover, alt: story.title }] : undefined,
-    },
-    twitter: {
-      card: cover ? "summary_large_image" : "summary",
-      title: story.title,
-      description: story.summary,
-      images: cover ? [cover] : undefined,
-    },
+      section: sectionLabel(story.type) || undefined,
+      tags: [`${eventYear(story.eventDate)}`, "on this day in history"],
+    } as Metadata["openGraph"],
   };
 }
 
@@ -86,29 +84,49 @@ export default async function StoryPage({ params }: StoryPageProps) {
   return (
     <>
       <StoryArticle story={story} related={related.filter((item) => item.slug !== story.slug).slice(0, 3)} />
-      <script
-        type="application/ld+json"
-        // Escape HTML delimiters in stored article text.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd(story)).replace(/</g, "\\u003c") }}
-      />
+      <JsonLd data={articleJsonLd(story)} />
+      <JsonLd data={storyBreadcrumbs(story)} />
     </>
   );
 }
 
+function storyBreadcrumbs(story: Story) {
+  const section = sectionFromType(story.type);
+  return breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    ...(section ? [{ name: sections[section].label, path: `/${section}` }] : []),
+    { name: story.title, path: storyPath(story.type, story.slug) ?? "/" },
+  ]);
+}
+
 function articleJsonLd(story: Story) {
-  const cover = story.media.find((item) => item.type === "image" && item.url)?.url;
+  const images = story.media.flatMap((item) => (item.type === "image" && item.url ? [item.url] : []));
+  const url = absoluteUrl(storyPath(story.type, story.slug) ?? "/");
+  const words = story.body.reduce(
+    (count, block) => count + (block.type === "image" ? 0 : block.text.trim().split(/\s+/).filter(Boolean).length),
+    0,
+  );
 
   return {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: story.title,
+    "@id": `${url}#article`,
+    headline: story.title.slice(0, 110),
+    alternativeHeadline: story.title,
     description: story.summary,
+    inLanguage: "en",
+    isAccessibleForFree: true,
     datePublished: story.publishedAt ?? undefined,
     dateModified: story.updatedAt,
+    // The date the event itself happened, which readers search for.
+    about: { "@type": "Event", name: story.title, startDate: story.eventDate },
     articleSection: sectionLabel(story.type) || undefined,
-    image: cover ? [cover] : undefined,
-    mainEntityOfPage: absoluteUrl(storyPath(story.type, story.slug) ?? "/"),
-    publisher: { "@type": "Organization", name: site.name },
+    keywords: [eventYear(story.eventDate), formatEventDate(story.eventDate), "on this day in history"].join(", "),
+    wordCount: words,
+    image: images.length ? images : undefined,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    author: { "@id": absoluteUrl("/#organization"), "@type": "Organization", name: site.name, url: site.url },
+    publisher: organizationJsonLd,
     citation: story.sources.map((source) => ({
       "@type": "CreativeWork",
       name: source.title,

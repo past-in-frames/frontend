@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { OnThisDayView } from "@/app/(site)/on-this-day-view";
-import { longMonthDay, monthDayKey, parseMonthDay, parseScope } from "@/lib/on-this-day";
-import { absoluteUrl } from "@/lib/site";
+import { monthDayKey, onThisDayDescription, onThisDayTitle, parseMonthDay, parseScope } from "@/lib/on-this-day";
+import { getOnThisDay, tryGet } from "@/lib/api";
+import { pageMetadata } from "@/lib/seo";
 
 type DatePageProps = {
   params: Promise<{ date: string }>;
@@ -11,16 +12,18 @@ type DatePageProps = {
 
 export async function generateMetadata({ params, searchParams }: DatePageProps): Promise<Metadata> {
   const date = parseMonthDay((await params).date);
-  if (!date) return { title: "Not found" };
+  if (!date) return { title: "Not found", robots: { index: false } };
 
-  const label = longMonthDay(date);
-  const filtered = parseScope((await searchParams).scope) !== "all";
-  return {
-    title: `On This Day — ${label}`,
-    description: `What happened on ${label}, in stories with their sources.`,
-    alternates: { canonical: absoluteUrl(`/on-this-day/${monthDayKey(date)}`) },
-    ...(filtered ? { robots: { index: false, follow: true } } : {}),
-  };
+  // A day with no stories would be a thin page, so it stays out of search results.
+  const { data } = await tryGet(() => getOnThisDay(date.month, date.day, "all"), null);
+  const empty = data !== null && !data.featured;
+
+  return pageMetadata({
+    title: onThisDayTitle(date),
+    description: onThisDayDescription(date),
+    path: `/on-this-day/${monthDayKey(date)}`,
+    noindex: empty || parseScope((await searchParams).scope) !== "all",
+  });
 }
 
 export default async function OnThisDayPage({ params, searchParams }: DatePageProps) {

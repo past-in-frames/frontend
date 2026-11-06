@@ -3,7 +3,8 @@ import { PageHeader, PageShell } from "@/components/page-header";
 import { SavedList } from "./saved-list";
 
 export const metadata: Metadata = {
-  title: "Saved",
+  title: "Saved Stories",
+  description: "Stories you saved on this device.",
   robots: { index: false, follow: true },
 };
 

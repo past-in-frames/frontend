@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader, PageShell } from "@/components/page-header";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
-  description: "Privacy Policy for Past In Frames.",
-};
+  description: "How Past In Frames collects, uses and protects information when you read our history stories, including cookies, analytics and advertising.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

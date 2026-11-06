@@ -141,7 +141,7 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
           </section>
         ) : null}
         <p className="text-sm text-faded">Found an error? <Link className="mi-link" href="/contact">Send a correction</Link>. <Link className="mi-link" href="/editorial-policy">Read our editorial standards</Link>.</p>
-        {related.length > 0 && section ? <section className="pb-10"><h2 className="mb-4 font-serif text-2xl font-semibold">More in {sections[section].label}</h2><div className="grid gap-5 sm:grid-cols-3">{related.map((item) => <StoryCard key={item.slug} story={item} />)}</div></section> : null}
+        {related.length > 0 && section ? <section className="pb-10"><h2 className="mb-4 font-serif text-2xl font-semibold">More in {sections[section].label}</h2><div className="grid gap-5 sm:grid-cols-3">{related.map((item) => <StoryCard key={item.slug} story={item} headingLevel="h3" />)}</div></section> : null}
       </div>
     </article>
   );

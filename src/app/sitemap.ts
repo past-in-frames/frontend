@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getCollections, getStories, tryGet } from "@/lib/api";
+import { getCollections, getOnThisDayDays, getStories, tryGet } from "@/lib/api";
 import { absoluteUrl } from "@/lib/site";
 import { sections, storyPath } from "@/lib/story-path";
 
@@ -10,6 +10,7 @@ const legal = ["/about", "/editorial-policy", "/contact", "/privacy", "/terms"];
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: stories } = await tryGet(() => getStories(), []);
   const { data: collections } = await tryGet(() => getCollections(), []);
+  const { data: days } = await tryGet(() => getOnThisDayDays(), [] as string[]);
 
   const staticPages: MetadataRoute.Sitemap = ["/", "/explore", "/explore/people", "/explore/places", "/explore/eras", "/explore/science", "/collections", "/watch", "/about", "/editorial-policy", "/contact", "/privacy", "/terms"].map(
     (path) => ({
@@ -25,6 +26,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // One page per calendar day that has stories, so each date can be found by searching for it.
+  const dayPages: MetadataRoute.Sitemap = days.map((day) => ({
+    url: absoluteUrl(`/on-this-day/${day}`),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
   const collectionPages: MetadataRoute.Sitemap = collections.map((collection) => ({
     url: absoluteUrl(`/collections/${collection.slug}`),
     changeFrequency: "weekly",
@@ -34,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...sectionPages,
+    ...dayPages,
     ...collectionPages,
     ...stories.flatMap((story) => {
       const path = storyPath(story.type, story.slug);

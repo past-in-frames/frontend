@@ -5,13 +5,37 @@ import { StoryGrid } from "@/components/story-card";
 import { StoryPagination } from "@/components/story-pagination";
 import { getStoriesPage, tryGet } from "@/lib/api";
 import { CATEGORY_PAGE_SIZE, pageHref, parsePageParam } from "@/lib/paging";
-import { absoluteUrl } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
 const TOPICS = {
-  people: { label: "People", lede: "The people behind the moments." },
-  places: { label: "Places", lede: "Where it happened." },
-  eras: { label: "Eras", lede: "The ages that shaped what came next." },
-  science: { label: "Science", lede: "Discoveries, missions and the people who made them." },
+  people: {
+    label: "People",
+    title: "People in History",
+    lede: "The people behind the moments: leaders, scientists, explorers and ordinary people whose choices changed what came next.",
+    description:
+      "Stories about the people who shaped history: leaders, scientists, explorers and artists, with the events and dates tied to each of them.",
+  },
+  places: {
+    label: "Places",
+    title: "Historic Places and Landmarks",
+    lede: "Where it happened: the bridges, cities, buildings and landscapes that became the setting for history.",
+    description:
+      "Stories about historic places and landmarks: the cities, buildings, bridges and disaster sites where major events took place.",
+  },
+  eras: {
+    label: "Eras",
+    title: "Wars, Revolutions and Turning Points",
+    lede: "The ages that shaped what came next: wars, revolutions, treaties and the turning points between them.",
+    description:
+      "Stories from the great eras of history: wars, revolutions, empires, treaties and the turning points that divided one age from the next.",
+  },
+  science: {
+    label: "Science",
+    title: "Science and Space History",
+    lede: "Discoveries, missions and the people who made them, from early observatories to the space age.",
+    description:
+      "Science and space history: discoveries, inventions, missions and experiments, told in short stories with their sources.",
+  },
 } as const;
 
 type TopicName = keyof typeof TOPICS;
@@ -29,14 +53,16 @@ export function generateStaticParams() {
   return Object.keys(TOPICS).map((topic) => ({ topic }));
 }
 
-export async function generateMetadata({ params }: TopicPageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: TopicPageProps): Promise<Metadata> {
   const topic = resolveTopic((await params).topic);
-  if (!topic) return { title: "Not found" };
-  return {
-    title: TOPICS[topic].label,
-    description: TOPICS[topic].lede,
-    alternates: { canonical: absoluteUrl(`/explore/${topic}`) },
-  };
+  if (!topic) return { title: "Not found", robots: { index: false } };
+
+  const { page } = parsePageParam((await searchParams).page);
+  return pageMetadata({
+    title: page > 1 ? `${TOPICS[topic].title} — Page ${page}` : TOPICS[topic].title,
+    description: TOPICS[topic].description,
+    path: pageHref(`/explore/${topic}`, page),
+  });
 }
 
 export default async function TopicPage({ params, searchParams }: TopicPageProps) {
@@ -57,7 +83,7 @@ export default async function TopicPage({ params, searchParams }: TopicPageProps
 
   return (
     <PageShell>
-      <PageHeader title={TOPICS[topic].label} lede={TOPICS[topic].lede} />
+      <PageHeader title={TOPICS[topic].title} lede={TOPICS[topic].lede} />
       {error ? (
         <p className="m-0 text-sm text-faded">{error}</p>
       ) : (

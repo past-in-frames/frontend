@@ -5,13 +5,14 @@ import { StoryGrid } from "@/components/story-card";
 import { StoryPagination } from "@/components/story-pagination";
 import { getStoriesPage, tryGet } from "@/lib/api";
 import { CATEGORY_PAGE_SIZE, pageHref, parsePageParam } from "@/lib/paging";
-import { absoluteUrl } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Watch",
-  description: "Big moments, short videos.",
-  alternates: { canonical: absoluteUrl("/watch") },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Short History Videos",
+  description:
+    "Watch big moments from history in short videos: launches, discoveries and turning points, each linked to a fully sourced story.",
+  path: "/watch",
+});
 
 export default async function WatchPage({
   searchParams,
@@ -30,7 +31,7 @@ export default async function WatchPage({
 
   return (
     <PageShell>
-      <PageHeader title="Watch" lede="Big moments, short videos." />
+      <PageHeader title="Short History Videos" lede="Big moments, short videos, each with the full story and its sources." />
       {error ? (
         <p className="m-0 text-sm text-faded">{error}</p>
       ) : (

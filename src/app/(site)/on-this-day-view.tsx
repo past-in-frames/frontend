@@ -4,6 +4,7 @@ import { BirthdayForm } from "@/components/home/birthday-form";
 import { ArchiveBar } from "@/components/home/archive-bar";
 import { DayStrip } from "@/components/home/day-strip";
 import { TopicTiles } from "@/components/home/topic-tiles";
+import { JsonLd } from "@/components/json-ld";
 import { PlayBadge } from "@/components/icons";
 import { PageShell } from "@/components/page-header";
 import { Cover, Eyebrow, rustButtonClass, SectionHeading } from "@/components/ui";
@@ -19,13 +20,17 @@ import {
 import {
   longMonthDay,
   monthDayFromIso,
+  monthDayKey,
+  onThisDayDescription,
   onThisDayHref,
+  onThisDayTitle,
   SCOPES,
   shiftDay,
   shortMonthDay,
   type MonthDay,
   type Scope,
 } from "@/lib/on-this-day";
+import { collectionPageJsonLd } from "@/lib/seo";
 import { todayIso } from "@/lib/story-dates";
 import { eventYear, storyPath } from "@/lib/story-path";
 
@@ -54,15 +59,32 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
     };
   });
 
+  const listed = [featured, ...also, ...week].flatMap((story) => {
+    const path = story ? storyPath(story.type, story.slug) : null;
+    return story && path ? [{ name: story.title, path }] : [];
+  });
+
   return (
     <PageShell>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: onThisDayTitle(date),
+          description: onThisDayDescription(date),
+          path: scope === "all" && onThisDayHref(date, scope, today) === "/" ? "/" : `/on-this-day/${monthDayKey(date)}`,
+          items: listed,
+        })}
+      />
       <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-        <div className="flex flex-col gap-1">
-          <Eyebrow>{label}</Eyebrow>
-          <h1 className="m-0 font-serif text-[48px] leading-[1.02] font-bold tracking-[-0.015em] sm:text-[60px]">
+        {/* One H1 that names the day, drawn as a date above the title. */}
+        <h1 className="m-0 flex flex-col gap-1">
+          <Eyebrow>
+            {label}
+            <span className="sr-only"> in history — </span>
+          </Eyebrow>
+          <span className="font-serif text-[48px] leading-[1.02] font-bold tracking-[-0.015em] sm:text-[60px]">
             On This Day
-          </h1>
-        </div>
+          </span>
+        </h1>
         <nav aria-label="Filter by region or topic" className="flex flex-wrap gap-2.5 md:pb-2">
           {SCOPES.map((item) => {
             const current = item.value === scope;
@@ -110,9 +132,9 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
                     {eventYear(story.eventDate)}
                   </span>
                   <span aria-hidden="true" className="h-14 w-px shrink-0 bg-ink/35" />
-                  <span className="mi-card-title font-serif text-[21px] leading-[1.2] font-bold sm:text-[24px]">
+                  <h3 className="mi-card-title m-0 font-serif text-[21px] leading-[1.2] font-bold sm:text-[24px]">
                     {story.title}
-                  </span>
+                  </h3>
                 </Link>
               </li>
             ))}
@@ -133,9 +155,9 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
                     sizes="(min-width: 1200px) 370px, (min-width: 640px) 33vw, 50vw"
                     aspect="aspect-[1.1/1]"
                   />
-                  <span className="mi-card-title font-serif text-[19px] leading-[1.2] font-bold sm:text-[22px]">
+                  <h3 className="mi-card-title m-0 font-serif text-[19px] leading-[1.2] font-bold sm:text-[22px]">
                     {story.title}
-                  </span>
+                  </h3>
                 </Link>
               </li>
             ))}
@@ -158,9 +180,9 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
                     sizes="(min-width: 1200px) 370px, (min-width: 640px) 33vw, 50vw"
                     aspect="aspect-[1.65/1]"
                   />
-                  <span className="mi-card-title font-serif text-[19px] leading-[1.2] font-bold sm:text-[22px]">
+                  <h3 className="mi-card-title m-0 font-serif text-[19px] leading-[1.2] font-bold sm:text-[22px]">
                     {collection.title}
-                  </span>
+                  </h3>
                 </Link>
               </li>
             ))}

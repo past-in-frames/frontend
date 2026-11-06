@@ -81,3 +81,13 @@ export function onThisDayHref(value: MonthDay, scope: Scope = DEFAULT_SCOPE, tod
   const path = isToday ? "/" : `/on-this-day/${monthDayKey(value)}`;
   return scope === DEFAULT_SCOPE ? path : `${path}?scope=${scope}`;
 }
+
+/** `On This Day in History: October 14` */
+export function onThisDayTitle(value: MonthDay) {
+  return `On This Day in History: ${longMonthDay(value)}`;
+}
+
+export function onThisDayDescription(value: MonthDay) {
+  const label = longMonthDay(value);
+  return `What happened on ${label} in history? Short, well-sourced stories about the events, discoveries and turning points that share this date.`;
+}

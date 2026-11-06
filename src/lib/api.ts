@@ -189,6 +189,11 @@ export function getOnThisDay(month: number, day: number, scope: string) {
   return apiGet<OnThisDay>(`/api/on-this-day?${query}`);
 }
 
+/** Calendar days (`MM-DD`) with at least one published story. */
+export function getOnThisDayDays() {
+  return apiGet<string[]>("/api/on-this-day/days");
+}
+
 export function getCollections(limit?: number) {
   return apiGet<CollectionSummary[]>(`/api/collections${limit ? `?limit=${limit}` : ""}`);
 }

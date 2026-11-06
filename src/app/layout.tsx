@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import Script from "next/script";
-import { site } from "@/lib/site";
+import { JsonLd } from "@/components/json-ld";
+import { organizationJsonLd } from "@/lib/seo";
+import { absoluteUrl, site } from "@/lib/site";
 import "./globals.css";
 
 const sourceSerif = Source_Serif_4({
@@ -29,22 +31,61 @@ const sourceSans = Source_Sans_3({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: site.name,
+    default: `${site.name} — On This Day in History`,
     template: `%s — ${site.name}`,
   },
   description: site.description,
+  applicationName: site.name,
+  keywords: ["on this day in history", "today in history", "historical events", "history stories", "anniversaries"],
+  authors: [{ name: site.name, url: site.url }],
+  creator: site.name,
+  publisher: site.name,
+  // Lets search engines show large previews and full snippets of the stories.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
   openGraph: {
     type: "website",
     siteName: site.name,
-    title: site.name,
+    locale: "en_US",
+    title: `${site.name} — On This Day in History`,
     description: site.description,
     url: site.url,
   },
   twitter: {
     card: "summary_large_image",
-    title: site.name,
+    title: `${site.name} — On This Day in History`,
     description: site.description,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f8f3ea",
+  width: "device-width",
+  initialScale: 1,
+};
+
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    organizationJsonLd,
+    {
+      "@type": "WebSite",
+      "@id": absoluteUrl("/#website"),
+      url: site.url,
+      name: site.name,
+      description: site.description,
+      inLanguage: "en",
+      publisher: { "@id": absoluteUrl("/#organization") },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${site.url}/search?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 };
 
 /** Development page views are not real traffic, so they stay out of Analytics. */
@@ -64,6 +105,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full bg-cream font-sans text-ink">
+        <JsonLd data={siteJsonLd} />
         {children}
         {/* gtag.js appends its own tags to <head>, so it has to be injected
             outside the tree React hydrates. */}

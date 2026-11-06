@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader, PageShell } from "@/components/page-header";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of Use",
-  description: "Terms of Use for Past In Frames.",
-};
+  description: "The terms for using Past In Frames: how you may read, share and cite our history stories, and the limits of what we promise.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

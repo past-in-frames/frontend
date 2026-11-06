@@ -5,14 +5,15 @@ import { PageHeader, PageShell } from "@/components/page-header";
 import { StoryGrid } from "@/components/story-card";
 import { SectionHeading } from "@/components/ui";
 import { getStories, tryGet, type StorySummary } from "@/lib/api";
-import { absoluteUrl } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 import { sections } from "@/lib/story-path";
 
-export const metadata: Metadata = {
-  title: "Explore",
-  description: "Browse stories by topic: people, places, eras and science.",
-  alternates: { canonical: absoluteUrl("/explore") },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Explore History by Topic",
+  description:
+    "Browse history by topic: the people who made it, the places where it happened, the eras that shaped it and the science behind it.",
+  path: "/explore",
+});
 
 export default async function ExplorePage() {
   const { data: stories, error } = await tryGet(
@@ -22,7 +23,7 @@ export default async function ExplorePage() {
 
   return (
     <PageShell>
-      <PageHeader title="Explore" lede="Browse stories by topic: the people, the places, the eras and the science." />
+      <PageHeader title="Explore History by Topic" lede="Browse stories by the people, the places, the eras and the science behind them." />
       <TopicTiles />
 
       <section className="flex flex-col gap-5" aria-labelledby="sections-heading">
@@ -43,7 +44,7 @@ export default async function ExplorePage() {
 
       <section className="flex flex-col gap-5" aria-labelledby="latest-heading">
         <SectionHeading id="latest-heading">Latest stories</SectionHeading>
-        {error ? <p className="m-0 text-sm text-faded">{error}</p> : <StoryGrid stories={stories} empty="No stories published yet." />}
+        {error ? <p className="m-0 text-sm text-faded">{error}</p> : <StoryGrid stories={stories} empty="No stories published yet." headingLevel="h3" />}
       </section>
     </PageShell>
   );

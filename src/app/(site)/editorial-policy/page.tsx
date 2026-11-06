@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader, PageShell } from "@/components/page-header";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Editorial policy", description: "Our standards for historical context, sources, illustrations and corrections." };
+export const metadata: Metadata = pageMetadata({
+  title: "Editorial Policy",
+  description: "How Past In Frames handles historical context, sources, AI illustrations, dates and corrections, so readers can judge what they read.",
+  path: "/editorial-policy",
+});
 
 export default function EditorialPolicyPage() {
   return <PageShell>
-    <PageHeader title="Editorial policy" lede="History needs context, evidence and a clear distinction between records and recreations." />
+    <PageHeader title="Editorial Policy" lede="History needs context, evidence and a clear distinction between records and recreations." />
     <div className="max-w-[720px] space-y-6 text-base leading-relaxed text-body">
       <section><h2 className="font-serif text-2xl font-semibold">What a story should explain</h2><p>Our editorial standard is to explain what happened, what led to it and why it mattered. A date or a dramatic image alone is not enough. Interpretations and disputed details should be distinguished from established facts, with uncertainty stated clearly.</p></section>
       <section><h2 className="font-serif text-2xl font-semibold">Sources and further reading</h2><p>Source lists let readers check claims and explore the subject. Original records, museums, archives and scholarly work should be preferred where available. A source must support the claim it accompanies; adding a link does not replace checking the evidence.</p></section>
