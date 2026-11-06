@@ -95,23 +95,44 @@ export function apiOrigin() {
   return API_URL;
 }
 
-async function apiFetch(path: string, options: { fresh?: boolean } = {}): Promise<Response> {
-  let response: Response;
-  try {
-    response = await fetch(
-      `${API_URL}${path}`,
-      options.fresh ? { cache: "no-store" } : { next: { revalidate: REVALIDATE_SECONDS } },
-    );
-  } catch {
-    throw new ApiError("Can't reach the API", 503);
-  }
+/** A proxy answers like this while the API container restarts, so these are worth asking again. */
+const RETRYABLE_STATUS = new Set([502, 503, 504]);
 
-  if (!response.ok) {
+/**
+ * Waits between attempts. A build asks the API for every story, and one failed request would stop
+ * the whole deploy, so while building it keeps trying for about half a minute (the time a restart
+ * takes). A reader's request waits only a moment before giving up.
+ */
+function retryDelays() {
+  return process.env.NEXT_PHASE === "phase-production-build" ? [1000, 2000, 4000, 8000, 15000] : [300];
+}
+
+async function apiFetch(path: string, options: { fresh?: boolean } = {}): Promise<Response> {
+  const delays = retryDelays();
+
+  for (let attempt = 0; ; attempt++) {
+    let response: Response | null = null;
+    try {
+      response = await fetch(
+        `${API_URL}${path}`,
+        options.fresh ? { cache: "no-store" } : { next: { revalidate: REVALIDATE_SECONDS } },
+      );
+    } catch {
+      response = null;
+    }
+
+    if (response?.ok) return response;
+
+    const retryable = response === null || RETRYABLE_STATUS.has(response.status);
+    if (retryable && attempt < delays.length) {
+      await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
+      continue;
+    }
+
+    if (response === null) throw new ApiError("Can't reach the API", 503);
     const body = (await response.json().catch(() => null)) as { message?: string } | null;
     throw new ApiError(body?.message ?? `API responded with ${response.status}`, response.status);
   }
-
-  return response;
 }
 
 async function apiGet<T>(path: string): Promise<T> {
