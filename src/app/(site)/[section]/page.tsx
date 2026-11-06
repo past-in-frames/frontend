@@ -48,6 +48,12 @@ const SECTION_SEO: Record<SectionPath, { title: string; heading: string; descrip
     description:
       "Battles, campaigns, ceasefires and peace agreements, told as what happened, when and where, with sources you can check.",
   },
+  crime: {
+    title: "Crime and Justice Stories",
+    heading: "Crime and Justice Stories",
+    description:
+      "Crimes, investigations, trials and sentences, told as recorded in court records, official reports and archives, with the sources left in plain sight.",
+  },
   space: {
     title: "Space Stories",
     heading: "Space Stories",

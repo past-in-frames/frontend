@@ -7,6 +7,7 @@ export const sections = {
   history: { type: "history", label: "History" },
   politics: { type: "politics", label: "Politics" },
   war: { type: "war", label: "War & Conflict" },
+  crime: { type: "crime", label: "Crime & Justice" },
   science: { type: "science", label: "Science" },
   space: { type: "space", label: "Space" },
   technology: { type: "technology", label: "Technology" },
