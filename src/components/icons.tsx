@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function CalendarIcon({ size = 16 }: { size?: number }) {
   return (
     <svg
@@ -64,24 +66,25 @@ export function FacebookIcon({ size = 15 }: { size?: number }) {
   );
 }
 
-/** Two overlapping frames: the Past In Frames mark. */
-export function LogoMark({ size = 36, tone = "rust" }: { size?: number; tone?: "rust" | "light" }) {
-  const color = tone === "rust" ? "var(--rust)" : "#f4efe6";
+/**
+ * The header and footer each render a mark, and the header keeps a second one
+ * for the other breakpoint. Lazy loading is what stops the copies that are
+ * hidden at the current width from being fetched and preloaded as well.
+ */
+export function LogoMark({ size = 36 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      stroke={color}
-      strokeWidth="2.2"
-      strokeLinejoin="miter"
-      aria-hidden="true"
-      className="shrink-0"
+    <span
+      className="inline-flex shrink-0 overflow-hidden rounded-[7px]"
+      style={{ width: size, height: size }}
     >
-      <rect x="10.5" y="3.5" width="18" height="18" />
-      <rect x="3.5" y="10.5" width="18" height="18" />
-    </svg>
+      <Image
+        src="/logo.png"
+        alt=""
+        width={size}
+        height={size}
+        className="h-full w-full origin-center scale-[1.55] object-cover"
+      />
+    </span>
   );
 }
 

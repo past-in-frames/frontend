@@ -15,7 +15,7 @@ export function SiteFooter() {
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <Link href="/" className="flex items-center gap-3" aria-label="Past In Frames home">
-            <LogoMark size={36} tone="light" />
+            <LogoMark size={40} />
             <span className="font-serif text-[28px] leading-none font-bold tracking-[-0.01em]">
               {site.name}
             </span>

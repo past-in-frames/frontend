@@ -58,7 +58,7 @@ export function SiteHeader() {
         <div className="border-b-2 border-ink/85">
           <div className="flex h-[60px] items-center gap-4 sm:h-16">
             <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Past In Frames home">
-              <LogoMark size={30} />
+              <LogoMark size={40} />
               <span className="font-serif text-[22px] leading-none font-bold tracking-[-0.01em] sm:text-[26px]">
                 Past In Frames
               </span>
