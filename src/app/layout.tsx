@@ -39,6 +39,8 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  // Ties the site to its AdSense account, next to the ads.txt file in /public.
+  other: { "google-adsense-account": "ca-pub-4974891755070728" },
   keywords: ["on this day in history", "today in history", "historical events", "history stories", "anniversaries"],
   authors: [{ name: site.name, url: site.url }],
   creator: site.name,
