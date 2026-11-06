@@ -189,6 +189,23 @@ export function getOnThisDay(month: number, day: number, scope: string) {
   return apiGet<OnThisDay>(`/api/on-this-day?${query}`);
 }
 
+export type SitemapData = {
+  /** When the newest published story last changed. */
+  latest: string | null;
+  stories: { slug: string; type: string; updatedAt: string; image: string | null }[];
+  days: { day: string; updatedAt: string }[];
+  collections: { slug: string; updatedAt: string; storyCount: number }[];
+  topics: Record<string, string | null>;
+  sections: Record<string, string | null>;
+  /** Newest story that has a video, or null when there are none. */
+  watch: string | null;
+};
+
+/** Everything the sitemap lists. Throws when the API is down, so crawlers never see a half-empty sitemap. */
+export function getSitemapData() {
+  return apiGet<SitemapData>("/api/sitemap");
+}
+
 /** Calendar days (`MM-DD`) with at least one published story. */
 export function getOnThisDayDays() {
   return apiGet<string[]>("/api/on-this-day/days");
