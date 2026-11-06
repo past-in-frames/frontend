@@ -102,22 +102,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${sourceSerif.variable} ${plexMono.variable} ${sourceSans.variable} h-full antialiased`}
     >
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4974891755070728"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className="min-h-full bg-cream font-sans text-ink">
         <JsonLd data={siteJsonLd} />
         {children}
+        {/* Both Google scripts weigh about 400 KB together. On a slow phone connection they
+            would compete with the page's own HTML, CSS and cover image, so they start only
+            after the page has loaded. The AdSense account is also named in a meta tag. */}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4974891755070728"
+          strategy="lazyOnload"
+          crossOrigin="anonymous"
+        />
         {/* gtag.js appends its own tags to <head>, so it has to be injected
             outside the tree React hydrates. */}
         {analytics ? (
           <>
-            <Script src="https://www.googletagmanager.com/gtag/js?id=G-W3QTDWTHDG" />
-            <Script id="gtag-init">
+            <Script src="https://www.googletagmanager.com/gtag/js?id=G-W3QTDWTHDG" strategy="lazyOnload" />
+            <Script id="gtag-init" strategy="lazyOnload">
               {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());

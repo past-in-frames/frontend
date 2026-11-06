@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
     ],
   },
   poweredByHeader: false,
+  // Readers mostly arrive from a social link on a phone. Putting the stylesheet in the HTML
+  // saves the request that otherwise blocks the first paint.
+  experimental: { inlineCss: true },
   async headers() {
     return [
       {
