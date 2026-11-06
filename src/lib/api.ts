@@ -34,6 +34,33 @@ export type StorySummary = {
   type: string | null;
   coverUrl: string | null;
   coverAlt: string | null;
+  /** The cover is an AI illustration, so the page labels it. */
+  coverIsAi?: boolean;
+  videoUrl?: string | null;
+};
+
+export type OnThisDay = {
+  month: number;
+  day: number;
+  featured: StorySummary | null;
+  also: StorySummary[];
+  week: StorySummary[];
+};
+
+export type CollectionSummary = {
+  slug: string;
+  title: string;
+  description: string | null;
+  coverUrl: string | null;
+  storyCount: number;
+};
+
+export type CollectionDetail = {
+  slug: string;
+  title: string;
+  description: string | null;
+  coverUrl: string | null;
+  stories: StorySummary[];
 };
 
 export type Story = {
@@ -67,12 +94,13 @@ export function apiOrigin() {
   return API_URL;
 }
 
-async function apiFetch(path: string): Promise<Response> {
+async function apiFetch(path: string, options: { fresh?: boolean } = {}): Promise<Response> {
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, {
-      next: { revalidate: REVALIDATE_SECONDS },
-    });
+    response = await fetch(
+      `${API_URL}${path}`,
+      options.fresh ? { cache: "no-store" } : { next: { revalidate: REVALIDATE_SECONDS } },
+    );
   } catch {
     throw new ApiError("Can't reach the API", 503);
   }
@@ -92,6 +120,11 @@ async function apiGet<T>(path: string): Promise<T> {
 
 type StoryListOptions = {
   type?: "science" | "history" | "other";
+  topic?: "people" | "places" | "eras" | "science";
+  /** Only the story flagged for "The Story Behind the Photo". */
+  photoStory?: boolean;
+  /** Only stories that carry a video. */
+  video?: boolean;
   excludeType?: "other";
   limit?: number;
   offset?: number;
@@ -106,6 +139,9 @@ function storyListPath(options: StoryListOptions) {
   const query = new URLSearchParams();
   if (options.type) query.set("type", options.type);
   if (options.excludeType) query.set("exclude", options.excludeType);
+  if (options.topic) query.set("topic", options.topic);
+  if (options.photoStory) query.set("photoStory", "true");
+  if (options.video) query.set("video", "true");
   if (options.limit) query.set("limit", String(options.limit));
   if (options.offset) query.set("offset", String(options.offset));
   if (options.sort && options.sort !== DEFAULT_STORY_SORT) query.set("sort", options.sort);
@@ -146,6 +182,25 @@ export function searchStories(
 
 export function getStory(slug: string) {
   return apiGet<Story>(`/api/stories/${encodeURIComponent(slug)}`);
+}
+
+export function getOnThisDay(month: number, day: number, scope: string) {
+  const query = new URLSearchParams({ month: String(month), day: String(day), scope });
+  return apiGet<OnThisDay>(`/api/on-this-day?${query}`);
+}
+
+export function getCollections(limit?: number) {
+  return apiGet<CollectionSummary[]>(`/api/collections${limit ? `?limit=${limit}` : ""}`);
+}
+
+export function getCollection(slug: string) {
+  return apiGet<CollectionDetail>(`/api/collections/${encodeURIComponent(slug)}`);
+}
+
+/** Any published story. Never cached, so each visit gets a different one. */
+export async function getRandomStory() {
+  const response = await apiFetch("/api/stories/random", { fresh: true });
+  return (await response.json()) as { slug: string; type: string | null };
 }
 
 /** Returns an empty result instead of throwing, for pages that must still render. */

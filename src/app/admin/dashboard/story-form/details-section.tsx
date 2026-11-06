@@ -2,6 +2,7 @@
 
 import { formatEventDate, storyPath } from "@/lib/story-path";
 import {
+  Checkbox,
   FormSection,
   Note,
   Segmented,
@@ -17,6 +18,18 @@ const SECTIONS = [
   { value: "science", label: "Science" },
   { value: "history", label: "History" },
   { value: "other", label: "M&I" },
+];
+
+const REGIONS = [
+  { value: "us", label: "U.S." },
+  { value: "world", label: "World" },
+];
+
+const TOPICS = [
+  { value: "people", label: "People" },
+  { value: "places", label: "Places" },
+  { value: "eras", label: "Eras" },
+  { value: "science", label: "Science" },
 ];
 
 export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
@@ -77,6 +90,49 @@ export function DetailsSection({ publishedSlug }: { publishedSlug?: string }) {
             <option value={story.type}>{story.type}</option>
           ) : null}
         </SelectField>
+        <SelectField
+          label="Region"
+          value={story.region}
+          onChange={(region) => actions.update({ region })}
+          hint="Used by the U.S. and World filters on On This Day."
+        >
+          <option value="">Not set</option>
+          {REGIONS.map((region) => (
+            <option key={region.value} value={region.value}>
+              {region.label}
+            </option>
+          ))}
+        </SelectField>
+        <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+          <legend className="mb-1.5 p-0 text-sm font-semibold">Topics</legend>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {TOPICS.map((topic) => (
+              <Checkbox
+                key={topic.value}
+                label={topic.label}
+                checked={story.topics.includes(topic.value)}
+                onChange={(checked) =>
+                  actions.update({
+                    topics: checked
+                      ? [...story.topics, topic.value]
+                      : story.topics.filter((item) => item !== topic.value),
+                  })
+                }
+              />
+            ))}
+          </div>
+          <p className="m-0 text-[13px] text-faded">Shown under Explore by Topic. Science also covers every story in the Science section.</p>
+        </fieldset>
+        <div className="flex flex-col gap-2 lg:col-span-2">
+          <Checkbox
+            label="Feature as “The Story Behind the Photo”"
+            checked={story.isPhotoStory}
+            onChange={(isPhotoStory) => actions.update({ isPhotoStory })}
+          />
+          <p className="m-0 text-[13px] text-faded">
+            The newest published story with this box ticked appears on the home page.
+          </p>
+        </div>
         <TextField
           label="Subtype"
           value={story.subtype}

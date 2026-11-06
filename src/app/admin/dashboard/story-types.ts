@@ -27,6 +27,12 @@ export type StoryInput = {
   status: "draft" | "published";
   type: string;
   subtype: string;
+  /** `us`, `world` or empty. Feeds the U.S. and World filters on On This Day. */
+  region: string;
+  /** `people`, `places` and `eras`; science is a section. */
+  topics: string[];
+  /** Eligible for "The Story Behind the Photo" on the home page. */
+  isPhotoStory: boolean;
   body: StoryBlockInput[];
   media: StoryMediaInput[];
   sources: StorySourceInput[];
@@ -41,6 +47,9 @@ export function blankStory(): StoryInput {
     status: "draft",
     type: "",
     subtype: "",
+    region: "",
+    topics: [],
+    isPhotoStory: false,
     body: [{ type: "paragraph", text: "" }],
     media: [],
     sources: [],

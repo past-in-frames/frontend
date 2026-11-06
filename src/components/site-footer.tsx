@@ -2,51 +2,50 @@ import Link from "next/link";
 import { FacebookIcon, LogoMark } from "@/components/icons";
 import { site } from "@/lib/site";
 
-const legalLinks = [
+const links = [
   { href: "/about", label: "About" },
-  { href: "/editorial-policy", label: "Editorial policy" },
-  { href: "/contact", label: "Contact & corrections" },
+  { href: "/editorial-policy", label: "Editorial Policy" },
+  { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Terms" },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="flex flex-col justify-between gap-6 border-t border-ink/12 px-[18px] pt-8 pb-7 lg:gap-10 lg:px-16 lg:pt-12 lg:pb-10">
-      <div className="flex flex-col justify-between gap-8 lg:flex-row">
-        <div className="hidden max-w-[300px] flex-col gap-3.5 lg:flex">
-          <div className="flex items-center gap-2.5">
-            <LogoMark size={32} />
-            <span className="font-serif text-[17px] font-semibold">{site.name}</span>
-          </div>
-          <p className="m-0 text-sm leading-relaxed text-faded">
-            A small daily dose of the strange, the surprising and the true.
-          </p>
+    <footer className="bg-footer text-[#f4efe6]">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <Link href="/" className="flex items-center gap-3" aria-label="Past In Frames home">
+            <LogoMark size={36} tone="light" />
+            <span className="font-serif text-[28px] leading-none font-bold tracking-[-0.01em]">
+              {site.name}
+            </span>
+          </Link>
+          <span aria-hidden="true" className="mx-5 hidden h-12 w-px bg-white/35 md:block" />
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-7 gap-y-2 text-[15px] md:ml-auto">
+            {links.map((link) => (
+              <Link key={link.href} href={link.href} className="hover:text-white hover:underline">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
-        <nav className="flex flex-col gap-2.5 lg:gap-3">
-          <span className="text-xs font-bold tracking-[0.06em] text-pale uppercase lg:text-[13px]">
-            Site
-          </span>
-          {legalLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm text-muted">
-              {link.label}
+        <div className="flex items-center justify-between gap-4 border-t border-white/12 pt-4 text-xs text-white/55">
+          <span>
+            © {new Date().getFullYear()} {site.name}. All rights reserved.{" "}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-white">
+              Terms
             </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="flex items-center justify-between border-t border-ink/8 pt-[18px] lg:pt-6">
-        <span className="text-xs text-pale lg:text-[13px]">
-          © {new Date().getFullYear()} {site.name}. All rights reserved.
-        </span>
-        <a
-          href="https://www.facebook.com/profile.php?id=61594799488023"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Past In Frames on Facebook"
-          className="flex size-[30px] items-center justify-center rounded-full border border-ink/14 lg:size-[34px]"
-        >
-          <FacebookIcon size={13} />
-        </a>
+          </span>
+          <a
+            href="https://www.facebook.com/profile.php?id=61594799488023"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Past In Frames on Facebook"
+            className="flex size-[30px] items-center justify-center rounded-full border border-white/25 text-white/70 hover:text-white [&_svg]:stroke-current"
+          >
+            <FacebookIcon size={13} />
+          </a>
+        </div>
       </div>
     </footer>
   );

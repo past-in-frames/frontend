@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PlayBadge } from "@/components/icons";
 import type { StorySummary } from "@/lib/api";
 import { eventYear, formatEventDate, sectionLabel, storyPath } from "@/lib/story-path";
 
@@ -9,12 +10,9 @@ const CARD_SIZES = "(min-width: 1024px) 33vw, 100vw";
 export function StoryCard({ story, eager = false }: { story: StorySummary; eager?: boolean }) {
   const label = sectionLabel(story.type);
   return (
-    <Link
-      href={storyPath(story.type, story.slug) ?? "/"}
-      className="mi-card flex flex-col overflow-hidden rounded-2xl border border-ink/8 bg-white lg:gap-3.5"
-    >
+    <Link href={storyPath(story.type, story.slug) ?? "/"} className="mi-card flex flex-col gap-3">
       {story.coverUrl ? (
-        <div className="relative h-40 w-full lg:h-[190px]">
+        <div className="relative aspect-[1.5/1] w-full overflow-hidden bg-ink/10">
           <Image
             src={story.coverUrl}
             alt={story.coverAlt ?? ""}
@@ -23,27 +21,26 @@ export function StoryCard({ story, eager = false }: { story: StorySummary; eager
             loading={eager ? "eager" : "lazy"}
             className="object-cover"
           />
+          {story.videoUrl ? (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <PlayBadge />
+            </span>
+          ) : null}
         </div>
       ) : (
         /* No cover yet, so the year fills the frame instead of a stand-in photo. */
-        <div className="flex h-40 w-full items-end bg-accent-2/8 px-4 pb-3 lg:h-[190px] lg:px-[18px] lg:pb-4">
-          <span className="font-serif text-[46px] leading-none font-semibold tabular-nums text-accent-2/70 lg:text-[58px]">
+        <div className="flex aspect-[1.5/1] w-full items-end bg-rust/8 px-4 pb-3">
+          <span className="font-serif text-[52px] leading-none font-semibold tabular-nums text-rust/70">
             {eventYear(story.eventDate)}
           </span>
         </div>
       )}
-      <div className="flex flex-col gap-1.5 px-4 py-4 lg:gap-2 lg:px-[18px] lg:pt-0 lg:pb-5">
-        {label ? (
-          <span className="text-[11px] font-bold tracking-[0.06em] text-accent-2 uppercase lg:text-xs lg:tracking-[0.08em]">
-            {label}
-          </span>
-        ) : null}
-        <span className="mi-card-title font-serif text-lg leading-tight font-semibold lg:text-xl lg:leading-[1.25]">
-          {story.title}
+      <div className="flex flex-col gap-1.5">
+        <span className="font-mono text-xs font-semibold tracking-[0.1em] text-rust uppercase">
+          {[eventYear(story.eventDate), label].filter(Boolean).join(" · ")}
         </span>
-        <span className="text-[13px] text-faded lg:text-sm">
-          {formatEventDate(story.eventDate)}
-        </span>
+        <span className="mi-card-title font-serif text-[22px] leading-[1.2] font-bold">{story.title}</span>
+        <span className="text-[13px] text-faded">{formatEventDate(story.eventDate)}</span>
       </div>
     </Link>
   );

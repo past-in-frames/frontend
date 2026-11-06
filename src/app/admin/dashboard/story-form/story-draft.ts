@@ -88,6 +88,8 @@ export function cleanStory(story: StoryInput): StoryInput {
     summary: story.summary.trim(),
     type: story.type.trim(),
     subtype: story.subtype.trim(),
+    region: story.region.trim(),
+    topics: [...story.topics].sort(),
     body,
     media: story.media.filter(
       (item) =>

@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Story, StoryMedia, StorySummary } from "@/lib/api";
 import { StoryCard } from "@/components/story-card";
+import { SaveButton } from "@/components/save-button";
+import { videoSource } from "@/lib/video";
 import { sectionFromType, sections, formatEventDate } from "@/lib/story-path";
 
 const FIGURE_SIZES = "(min-width: 1024px) 780px, 100vw";
@@ -58,6 +60,17 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
             {story.publishedAt ? <>Published <time dateTime={story.publishedAt}>{formatEventDate(story.publishedAt.slice(0, 10))}</time> · </> : null}
             Updated <time dateTime={story.updatedAt}>{formatEventDate(story.updatedAt.slice(0, 10))}</time> · {Math.max(1, Math.ceil(words / 200))} min read
           </p>
+          <SaveButton
+            story={{
+              slug: story.slug,
+              title: story.title,
+              summary: story.summary,
+              eventDate: story.eventDate,
+              type: story.type,
+              coverUrl: lead?.url ?? story.media.find((item) => item.type === "image" && item.url)?.url ?? null,
+              coverAlt: null,
+            }}
+          />
         </header>
 
         {headings.length > 1 ? (
@@ -68,6 +81,7 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
         ) : null}
 
         {lead ? <StoryFigure media={lead} eager className="m-0" /> : null}
+        {story.media.map((item) => (item.type === "video" && item.url ? <StoryVideo key={item.key} media={item} /> : null))}
 
         <div>
           {story.body.map((block, index) => {
@@ -130,6 +144,39 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
         {related.length > 0 && section ? <section className="pb-10"><h2 className="mb-4 font-serif text-2xl font-semibold">More in {sections[section].label}</h2><div className="grid gap-5 sm:grid-cols-3">{related.map((item) => <StoryCard key={item.slug} story={item} />)}</div></section> : null}
       </div>
     </article>
+  );
+}
+
+function StoryVideo({ media }: { media: StoryMedia }) {
+  if (!media.url) return null;
+  const source = videoSource(media.url);
+
+  return (
+    <figure className="m-0">
+      {source.kind === "embed" ? (
+        <iframe
+          src={source.src}
+          title={media.caption ?? "Story video"}
+          loading="lazy"
+          allow="accelerometer; encrypted-media; picture-in-picture"
+          allowFullScreen
+          className="aspect-video w-full border-0 bg-ink"
+        />
+      ) : source.kind === "file" ? (
+        <video src={source.src} controls preload="metadata" className="aspect-video w-full bg-ink" />
+      ) : (
+        <a href={source.src} target="_blank" rel="noopener noreferrer" className="mi-link">
+          Watch the video ↗
+        </a>
+      )}
+      {media.caption || media.credit ? (
+        <figcaption className="mt-2 text-[13px] text-faded">
+          {media.caption}
+          {media.caption && media.credit ? " · " : ""}
+          {media.credit}
+        </figcaption>
+      ) : null}
+    </figure>
   );
 }
 

@@ -100,8 +100,9 @@ export function MediaSection() {
       ))}
       {leftovers.some(({ item }) => item.type === "video") ? (
         <Note>
-          The site only renders images today, so video rows are stored but never
-          shown to readers.
+          YouTube and Vimeo links and .mp4 files play on the story page. Any other
+          address shows as a link. A story with a video also appears on Watch,
+          using its cover as the thumbnail.
         </Note>
       ) : null}
     </FormSection>

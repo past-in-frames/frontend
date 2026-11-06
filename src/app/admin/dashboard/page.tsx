@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { loadAdmin } from "@/lib/admin-proxy";
 import { LogoutButton } from "./logout-button";
 import { StoriesTable, type AdminStory } from "./stories-table";
@@ -17,7 +18,12 @@ export default async function AdminDashboardPage() {
         <h1 className="m-0 font-serif text-[34px] leading-[1.08] font-semibold tracking-[-0.01em] lg:text-5xl">
           Dashboard
         </h1>
-        <LogoutButton />
+        <div className="flex items-center gap-4">
+          <Link href="/admin/dashboard/collections" className="text-sm font-semibold text-accent-2">
+            Collections
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
       {result.ok ? (
         <StoriesTable stories={result.data} />

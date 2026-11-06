@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site-header";
  */
 export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col bg-cream">
+    <div className="flex min-h-screen w-full flex-col bg-cream">
       <SiteHeader />
       <main className="flex flex-grow flex-col">{children}</main>
       <SiteFooter />
