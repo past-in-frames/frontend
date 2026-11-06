@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // The public pages may be framed by this site and by AdSense, whose Ad settings preview
+          // loads the site in a frame. No other site can frame them.
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self' https://adsense.google.com" },
+        ],
+      },
+      {
+        // The editor and the API are never framed, not even by AdSense. A later rule wins for the same header.
+        source: "/:area(admin|api)/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
         ],
       },
