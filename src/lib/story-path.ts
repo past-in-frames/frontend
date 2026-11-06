@@ -1,7 +1,7 @@
 /**
  * Public sections, in the order the site lists them. The key is the URL segment and
- * `type` is the value stored on the story. Only `others` differs (`/others` for the
- * stored type `other`). Keep this list in step with `backend/src/lib/story-types.ts`.
+ * `type` is the value stored on the story; the two are the same. Keep this list in
+ * step with `backend/src/lib/story-types.ts`.
  */
 export const sections = {
   history: { type: "history", label: "History" },
@@ -18,7 +18,6 @@ export const sections = {
   art: { type: "art", label: "Art & Literature" },
   music: { type: "music", label: "Music" },
   film: { type: "film", label: "Film & TV" },
-  others: { type: "other", label: "Other" },
 } as const;
 
 export type SectionPath = keyof typeof sections;
@@ -26,8 +25,6 @@ export type SectionPath = keyof typeof sections;
 export const sectionPaths = Object.keys(sections) as SectionPath[];
 
 export const sectionNav = sectionPaths.map((path) => ({ href: `/${path}`, label: sections[path].label }));
-
-export const miscellaneousHref = "/others";
 
 export function sectionFromPath(value: string): SectionPath | null {
   return Object.hasOwn(sections, value) ? (value as SectionPath) : null;

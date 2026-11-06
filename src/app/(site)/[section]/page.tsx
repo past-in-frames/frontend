@@ -108,16 +108,9 @@ const SECTION_SEO: Record<SectionPath, { title: string; heading: string; descrip
     description:
       "Premieres, broadcasts, studios and awards from cinema and television, with dates and details from archives and official records.",
   },
-  others: {
-    title: "Miscellaneous and Interesting Stories",
-    heading: "Miscellaneous & Interesting Stories",
-    description:
-      "Mysteries, trials, curiosities and the unexplained from history, written plainly and with sources, so you can tell what is known from what is legend.",
-  },
 };
 
 function resolveSection(param: string): SectionPath | null {
-  if (param === "other") return "others";
   return sectionFromPath(param);
 }
 
@@ -150,8 +143,9 @@ export async function generateMetadata({ params, searchParams }: SectionPageProp
 
 export default async function SectionPage({ params, searchParams }: SectionPageProps) {
   const { section: param } = await params;
-  if (param === "other") {
-    permanentRedirect("/others");
+  // The old Other section was retired and its stories were moved to the sections that fit them.
+  if (param === "other" || param === "others") {
+    permanentRedirect("/");
   }
 
   const section = sectionFromPath(param);

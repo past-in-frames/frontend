@@ -12,7 +12,7 @@ export default async function LegacyCategoryRedirect({ params, searchParams }: L
     category === "science" || category === "history"
       ? `/${category}`
       : category === "other" || category === "others"
-        ? "/others"
+        ? "/"
         : null;
   if (!target) {
     notFound();

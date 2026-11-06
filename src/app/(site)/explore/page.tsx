@@ -35,7 +35,7 @@ export default async function ExplorePage() {
                 href={`/${path}`}
                 className="inline-flex h-10 items-center rounded-full border border-ink/70 px-5 text-[15px] font-semibold hover:border-rust hover:text-rust"
               >
-                {path === "others" ? "Miscellaneous & Interesting" : section.label}
+                {section.label}
               </Link>
             </li>
           ))}
