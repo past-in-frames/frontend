@@ -75,8 +75,8 @@ export default async function StoryPage({ params }: StoryPageProps) {
     notFound();
   }
 
-  const type =
-    story.type === "science" || story.type === "history" || story.type === "other" ? story.type : null;
+  const sectionType = sectionFromType(story.type);
+  const type = sectionType ? sections[sectionType].type : null;
   const { data: related } = type
     ? await tryGet(() => getStories({ type, limit: 4, sort: "latest" }), [])
     : { data: [] };

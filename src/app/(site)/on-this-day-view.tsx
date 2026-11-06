@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BirthdayForm } from "@/components/home/birthday-form";
 import { ArchiveBar } from "@/components/home/archive-bar";
 import { DayStrip } from "@/components/home/day-strip";
+import { SectionShelves } from "@/components/home/section-shelves";
 import { TopicTiles } from "@/components/home/topic-tiles";
 import { JsonLd } from "@/components/json-ld";
 import { PlayBadge } from "@/components/icons";
@@ -165,6 +166,8 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
           </ul>
         </section>
       ) : null}
+
+      <SectionShelves />
 
       {photo.data[0] ? <PhotoStory story={photo.data[0]} /> : null}
 

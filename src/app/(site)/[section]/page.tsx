@@ -36,6 +36,72 @@ const SECTION_SEO: Record<SectionPath, { title: string; heading: string; descrip
     description:
       "History stories about wars, treaties, inventions and turning points, one date at a time, each short and each with sources you can check.",
   },
+  politics: {
+    title: "Politics and Government Stories",
+    heading: "Politics and Government Stories",
+    description:
+      "Elections, treaties, laws and the work of governments, one date at a time. Each story sticks to what is documented and lists its sources.",
+  },
+  war: {
+    title: "War and Conflict Stories",
+    heading: "War and Conflict Stories",
+    description:
+      "Battles, campaigns, ceasefires and peace agreements, told as what happened, when and where, with sources you can check.",
+  },
+  space: {
+    title: "Space Stories",
+    heading: "Space Stories",
+    description:
+      "Launches, landings, telescopes and discoveries beyond Earth, one date at a time, each with sources from space agencies and archives.",
+  },
+  technology: {
+    title: "Technology and Invention Stories",
+    heading: "Technology and Invention Stories",
+    description:
+      "Inventions, patents, machines and networks: when they were built, who built them and what came next, with sources you can check.",
+  },
+  medicine: {
+    title: "Medicine and Health Stories",
+    heading: "Medicine and Health Stories",
+    description:
+      "Treatments, vaccines, outbreaks and medical research, described as recorded by hospitals, agencies and journals.",
+  },
+  nature: {
+    title: "Nature and Disaster Stories",
+    heading: "Nature and Disaster Stories",
+    description:
+      "Earthquakes, storms, eruptions, floods and the natural world, with dates, places and figures from official records.",
+  },
+  exploration: {
+    title: "Exploration and Geography Stories",
+    heading: "Exploration and Geography Stories",
+    description:
+      "Expeditions, voyages, first ascents and maps: where people went, when, and what the records say they found.",
+  },
+  sport: {
+    title: "Sport Stories",
+    heading: "Sport Stories",
+    description:
+      "Games, matches, records and championships, one date at a time, with results taken from official records.",
+  },
+  art: {
+    title: "Art and Literature Stories",
+    heading: "Art and Literature Stories",
+    description:
+      "Paintings, books, theatre and architecture: when works were made, shown or published, with sources from museums and archives.",
+  },
+  music: {
+    title: "Music Stories",
+    heading: "Music Stories",
+    description:
+      "Concerts, albums, premieres and composers, told through dates and records, with the sources left in plain sight.",
+  },
+  film: {
+    title: "Film and TV Stories",
+    heading: "Film and TV Stories",
+    description:
+      "Premieres, broadcasts, studios and awards from cinema and television, with dates and details from archives and official records.",
+  },
   others: {
     title: "Miscellaneous and Interesting Stories",
     heading: "Miscellaneous & Interesting Stories",

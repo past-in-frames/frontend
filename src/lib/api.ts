@@ -1,5 +1,6 @@
 import "server-only";
 
+import { sections, type SectionPath } from "@/lib/story-path";
 import { DEFAULT_STORY_SORT } from "@/lib/story-sort";
 
 const API_URL = (process.env.API_URL ?? "http://localhost:3023").replace(/\/+$/, "");
@@ -119,7 +120,7 @@ async function apiGet<T>(path: string): Promise<T> {
 }
 
 type StoryListOptions = {
-  type?: "science" | "history" | "other";
+  type?: (typeof sections)[SectionPath]["type"];
   topic?: "people" | "places" | "eras" | "science";
   /** Only the story flagged for "The Story Behind the Photo". */
   photoStory?: boolean;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
 import { BookmarkIcon, LogoMark, SearchIcon } from "@/components/icons";
+import { sectionNav } from "@/lib/story-path";
 
 const SEARCH_DEBOUNCE_MS = 500;
 
@@ -95,6 +96,27 @@ export function SiteHeader() {
             className="-mx-4 flex items-center gap-6 overflow-x-auto px-4 pb-3 md:hidden"
           >
             {links}
+          </nav>
+
+          <nav
+            aria-label="Sections"
+            className="-mx-4 flex items-center gap-5 overflow-x-auto border-t border-ink/20 px-4 py-2.5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10"
+          >
+            {sectionNav.map((item) => {
+              const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={current ? "page" : undefined}
+                  className={`whitespace-nowrap text-[13px] font-semibold tracking-wide uppercase ${
+                    current ? "text-rust" : "text-muted hover:text-rust"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {searchOpen ? (

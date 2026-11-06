@@ -1,6 +1,6 @@
 "use client";
 
-import { formatEventDate, storyPath } from "@/lib/story-path";
+import { formatEventDate, sectionPaths, sections, storyPath } from "@/lib/story-path";
 import {
   Checkbox,
   FormSection,
@@ -14,11 +14,7 @@ import { useEditor } from "./editor-context";
 import { isCalendarDate, LIMITS } from "./story-validation";
 
 /** The site header links these, and it reads `type` to fill them. */
-const SECTIONS = [
-  { value: "science", label: "Science" },
-  { value: "history", label: "History" },
-  { value: "other", label: "M&I" },
-];
+const SECTIONS = sectionPaths.map((path) => ({ value: sections[path].type, label: sections[path].label }));
 
 const REGIONS = [
   { value: "us", label: "U.S." },

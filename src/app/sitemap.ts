@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getSitemapData } from "@/lib/api";
 import { absoluteUrl } from "@/lib/site";
-import { sectionFromType, storyPath } from "@/lib/story-path";
+import { sectionFromType, sectionPaths, sections, storyPath } from "@/lib/story-path";
 
 /**
  * Built when it is requested, never while the site is built: a build must not
@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic";
 type Entry = MetadataRoute.Sitemap[number];
 
 const TOPICS = ["people", "places", "eras", "science"] as const;
-const SECTIONS = ["science", "history", "others"] as const;
 const LEGAL = ["/about", "/editorial-policy", "/contact", "/privacy", "/terms"];
 
 function dateOf(value: string | null | undefined) {
@@ -49,12 +48,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  const sections: Entry[] = SECTIONS.map((section) => ({
-    url: absoluteUrl(`/${section}`),
-    lastModified: dateOf(data.sections[section === "others" ? "other" : section]),
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+  // A section with no published story yet is an empty page, so it is listed only once it has one.
+  const sectionEntries: Entry[] = sectionPaths
+    .filter((section) => data.sections[sections[section].type])
+    .map((section) => ({
+      url: absoluteUrl(`/${section}`),
+      lastModified: dateOf(data.sections[sections[section].type]),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
 
   const collections: Entry[] = data.collections.map((collection) => ({
     url: absoluteUrl(`/collections/${collection.slug}`),
@@ -90,5 +92,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.3,
   }));
 
-  return [...core, ...topics, ...sections, ...collections, ...days, ...stories, ...legal];
+  return [...core, ...topics, ...sectionEntries, ...collections, ...days, ...stories, ...legal];
 }
