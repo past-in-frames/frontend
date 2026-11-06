@@ -3,6 +3,7 @@ import Link from "next/link";
 import { loadAdmin } from "@/lib/admin-proxy";
 import { LogoutButton } from "./logout-button";
 import { StoriesTable, type AdminStory } from "./stories-table";
+import { YoutubeSyncButton } from "./youtube-sync-button";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -22,6 +23,7 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/dashboard/collections" className="text-sm font-semibold text-accent-2">
             Collections
           </Link>
+          <YoutubeSyncButton />
           <LogoutButton />
         </div>
       </div>

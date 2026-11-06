@@ -6,7 +6,11 @@ const nextConfig: NextConfig = {
   turbopack: { root: import.meta.dirname },
   // Story images are uploaded to S3 and served through CloudFront.
   images: {
-    remotePatterns: [new URL("https://d2jx2whayczcsd.cloudfront.net/**")],
+    remotePatterns: [
+      new URL("https://d2jx2whayczcsd.cloudfront.net/**"),
+      // Thumbnails of the YouTube videos on Watch.
+      new URL("https://i.ytimg.com/vi/**"),
+    ],
   },
   poweredByHeader: false,
   async headers() {

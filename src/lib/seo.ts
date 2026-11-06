@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { absoluteUrl, site } from "@/lib/site";
+import { absoluteUrl, site, youtubeChannelUrl } from "@/lib/site";
 
 /**
  * Search results cut a description at about 155 characters, so shorter ones are
@@ -70,7 +70,7 @@ export const organizationJsonLd = {
   name: site.name,
   url: site.url,
   logo: absoluteUrl("/logo.png"),
-  sameAs: ["https://www.facebook.com/profile.php?id=61594799488023"],
+  sameAs: ["https://www.facebook.com/profile.php?id=61594799488023", youtubeChannelUrl],
 };
 
 export function breadcrumbJsonLd(trail: { name: string; path: string }[]) {

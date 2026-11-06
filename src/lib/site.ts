@@ -7,6 +7,9 @@ export const site = {
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3022").replace(/\/+$/, ""),
 } as const;
 
+/** The channel whose videos appear on Watch. */
+export const youtubeChannelUrl = "https://www.youtube.com/@PastInFramesX";
+
 export function absoluteUrl(path: string) {
   return `${site.url}${path.startsWith("/") ? path : `/${path}`}`;
 }

@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Story, StoryMedia, StorySummary } from "@/lib/api";
 import { StoryCard } from "@/components/story-card";
 import { SaveButton } from "@/components/save-button";
-import { videoSource } from "@/lib/video";
+import { VideoPlayer } from "@/components/video-player";
+import { isShortUrl, videoSource, youtubeId } from "@/lib/video";
 import { sectionFromType, sections, formatEventDate } from "@/lib/story-path";
 
 const FIGURE_SIZES = "(min-width: 1024px) 780px, 100vw";
@@ -150,10 +151,15 @@ export function StoryArticle({ story, related = [] }: { story: Story; related?: 
 function StoryVideo({ media }: { media: StoryMedia }) {
   if (!media.url) return null;
   const source = videoSource(media.url);
+  const id = youtubeId(media.url);
 
   return (
     <figure className="m-0">
-      {source.kind === "embed" ? (
+      {id && isShortUrl(media.url) ? (
+        <VideoPlayer videoId={id} title={media.caption ?? "Story video"} sizes="360px" vertical className="mx-auto max-w-[360px]" />
+      ) : id ? (
+        <VideoPlayer videoId={id} title={media.caption ?? "Story video"} sizes="780px" />
+      ) : source.kind === "embed" ? (
         <iframe
           src={source.src}
           title={media.caption ?? "Story video"}

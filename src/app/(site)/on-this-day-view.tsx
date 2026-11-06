@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BirthdayForm } from "@/components/home/birthday-form";
 import { ArchiveBar } from "@/components/home/archive-bar";
@@ -6,6 +5,7 @@ import { DayStrip } from "@/components/home/day-strip";
 import { TopicTiles } from "@/components/home/topic-tiles";
 import { JsonLd } from "@/components/json-ld";
 import { PlayBadge } from "@/components/icons";
+import { VideoPlayer } from "@/components/video-player";
 import { PageShell } from "@/components/page-header";
 import { Cover, Eyebrow, rustButtonClass, SectionHeading } from "@/components/ui";
 import {
@@ -32,6 +32,7 @@ import {
 } from "@/lib/on-this-day";
 import { collectionPageJsonLd } from "@/lib/seo";
 import { todayIso } from "@/lib/story-dates";
+import { isShortUrl, youtubeId } from "@/lib/video";
 import { eventYear, storyPath } from "@/lib/story-path";
 
 const STRIP_RADIUS = 3;
@@ -45,7 +46,7 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
     tryGet(() => getOnThisDay(date.month, date.day, scope), empty),
     tryGet(() => getStories({ photoStory: true, limit: 1, sort: "latest" }), [] as StorySummary[]),
     tryGet(() => getCollections(3), [] as CollectionSummary[]),
-    tryGet(() => getStories({ video: true, limit: 1, sort: "latest" }), [] as StorySummary[]),
+    tryGet(() => getStories({ video: true, limit: 8, sort: "latest" }), [] as StorySummary[]),
   ]);
 
   const { featured, also, week } = day.data;
@@ -208,7 +209,7 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
             Watch in 30 Seconds
           </h2>
           <p className="m-0 mb-2 font-serif text-lg text-ink">Big moments, short videos.</p>
-          <WatchTile story={watch.data[0]} />
+          <WatchTile story={watch.data.find((story) => story.videoUrl && !isShortUrl(story.videoUrl))} />
           <Link href="/watch" className={`${rustButtonClass} mt-1 self-start`}>
             Browse videos →
           </Link>
@@ -271,29 +272,20 @@ function PhotoStory({ story }: { story: StorySummary }) {
   );
 }
 
-/** The thumbnail of the newest video. With no video yet it stays as a dark placeholder so the layout holds. */
+/**
+ * The newest regular video as a real player; Shorts are upright and live on
+ * Watch. With no such video yet, it stays a dark tile that links to Watch so the
+ * layout holds.
+ */
 function WatchTile({ story }: { story?: StorySummary }) {
-  const body = (
-    <div className="relative aspect-[2.4/1] w-full overflow-hidden bg-ink">
-      {story?.coverUrl ? (
-        <Image
-          src={story.coverUrl}
-          alt={story.coverAlt ?? ""}
-          fill
-          sizes="(min-width: 1200px) 520px, (min-width: 768px) 45vw, 100vw"
-          className="object-cover"
-        />
-      ) : null}
-      <span className="absolute inset-0 flex items-center justify-center">
-        <PlayBadge size={48} />
-      </span>
-    </div>
-  );
+  const id = story?.videoUrl ? youtubeId(story.videoUrl) : null;
+  if (story && id) return <VideoPlayer videoId={id} title={story.title} />;
 
-  if (!story) return body;
   return (
-    <Link href={storyPath(story.type, story.slug) ?? "/watch"} aria-label={`Watch: ${story.title}`}>
-      {body}
+    <Link href="/watch" aria-label="Watch videos" className="relative block aspect-video w-full overflow-hidden bg-ink">
+      <span className="absolute inset-0 flex items-center justify-center">
+        <PlayBadge size={56} />
+      </span>
     </Link>
   );
 }
