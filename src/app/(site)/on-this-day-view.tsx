@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BirthdayForm } from "@/components/home/birthday-form";
+import { BirthdayCalendar } from "@/components/home/birthday-calendar";
 import { AiShorts } from "@/components/home/ai-shorts";
 import { ArchiveBar } from "@/components/home/archive-bar";
 import { DayStrip } from "@/components/home/day-strip";
@@ -218,7 +218,7 @@ export async function OnThisDayView({ date, scope }: { date: MonthDay; scope: Sc
             My Birthday in History
           </h2>
           <p className="m-0 mb-2 font-serif text-lg text-ink">See what happened on your date.</p>
-          <BirthdayForm initial={date} today={today} />
+          <BirthdayCalendar initial={date} today={today} />
         </section>
         <section className="flex flex-col gap-3 md:border-l md:border-ink/35 md:pl-8" aria-labelledby="watch-heading">
           <h2 id="watch-heading" className="m-0 font-serif text-[30px] leading-[1.1] font-bold tracking-[-0.01em]">
