@@ -118,8 +118,10 @@ function articleJsonLd(story: Story) {
     isAccessibleForFree: true,
     datePublished: story.publishedAt ?? undefined,
     dateModified: story.updatedAt,
-    // The date the event itself happened, which readers search for.
-    about: { "@type": "Event", name: story.title, startDate: story.eventDate },
+    // The date the story is about, which readers search for. This is not an Event: Google reads a
+    // nested Event as an event listing and then demands a location, which a past event does not have.
+    about: { "@type": "Thing", name: story.title },
+    temporalCoverage: story.eventDate,
     articleSection: sectionLabel(story.type) || undefined,
     keywords: [eventYear(story.eventDate), formatEventDate(story.eventDate), "on this day in history"].join(", "),
     wordCount: words,
